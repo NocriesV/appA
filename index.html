@@ -760,10 +760,12 @@
         </div>
 
         <div class="filter-chips">
-          <div class="chip active" onclick="filterChip(this)">Все</div>
-          <div class="chip" onclick="filterChip(this)">📦 Срочные</div>
-          <div class="chip" onclick="filterChip(this)">💰 Высокий бюджет</div>
-          <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
+          <div class="chip active" data-filter="all" onclick="filterOrders(this)">Все</div>
+          <div class="chip" data-filter="urgent" onclick="filterOrders(this)">📦 Срочные</div>
+          <div class="chip" data-filter="highbudget" onclick="filterOrders(this)">💰 Высокий бюджет</div>
+          <div class="chip" data-filter="youtube" onclick="filterOrders(this)">🎬 YouTube</div>
+          <div class="chip" data-filter="reels" onclick="filterOrders(this)">📱 Reels</div>
+          <div class="chip" data-filter="clips" onclick="filterOrders(this)">🎵 Клипы</div>
         </div>
       </div>
 
@@ -805,8 +807,29 @@
           <input class="input" type="number" placeholder="10000" id="job-budget">
         </div>
         <div class="input-group">
-          <label class="input-label">Дедлайн *</label>
+          <label class="input-label">Дедлайн</label>
           <input class="input" type="date" id="job-deadline">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Категория видео</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <div class="chip" id="jcat-reels" onclick="toggleJobCat('reels')">📱 Reels/Shorts</div>
+            <div class="chip" id="jcat-youtube" onclick="toggleJobCat('youtube')">🎬 YouTube</div>
+            <div class="chip" id="jcat-clips" onclick="toggleJobCat('clips')">🎵 Клипы</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Тип заказа</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <div class="chip" id="jtype-urgent" onclick="toggleJobType('urgent')">📦 Срочный</div>
+            <div class="chip" id="jtype-highbudget" onclick="toggleJobType('highbudget')">💰 Высокий бюджет</div>
+          </div>
         </div>
       </div>
 
@@ -906,6 +929,36 @@
         <div class="display-title" style="font-size:20px;padding-top:4px;">Мои отклики</div>
       </div>
       <div id="my-responses-list">
+        <div class="loader"><div class="spinner"></div> Загрузка...</div>
+      </div>
+      <div class="scroll-pad"></div>
+    </div>
+  </div>
+
+  <!-- =================== CLIENT PROFILE (view) =================== -->
+  <div class="screen" id="screen-client-profile">
+    <div class="page-header">
+      <div class="back-btn" onclick="history.back(); goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Профиль заказчика</span>
+    </div>
+    <div class="screen-content" id="client-profile-content"></div>
+  </div>
+
+  <!-- =================== ADMIN PANEL =================== -->
+  <div class="screen" id="screen-admin">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">🛡 Панель администратора</span>
+    </div>
+    <div class="screen-content">
+      <div style="padding:16px 20px 8px;">
+        <input class="input" placeholder="Поиск по username или telegram_id..." id="admin-search" oninput="adminSearch()">
+      </div>
+      <div id="admin-users-list">
         <div class="loader"><div class="spinner"></div> Загрузка...</div>
       </div>
       <div class="scroll-pad"></div>
@@ -1111,6 +1164,9 @@ async function doLogin() {
 }
 
 async function enterDashboard() {
+  // Clear caches on fresh login
+  state._montersCache = null;
+  state._ordersCache = null;
   updateHeaderUI();
   const dash = state.role === 'client' ? 'screen-client-dashboard' : 'screen-editor-dashboard';
   showScreen(dash);
@@ -1290,6 +1346,14 @@ function renderMonterProfileById(user, portfolio = []) {
     portfolioHtml = `<div style="text-align:center;padding:24px 0;color:var(--muted2);font-size:13px;">Портфолио пока пусто</div>`;
   }
 
+  // Load deal count + rating for this monter
+  let monterDeals = 0;
+  try {
+    const dr = await sb.select('reviews', `reviewee_id=eq.${user.id}&deal_happened=eq.true&select=id`);
+    monterDeals = dr ? dr.length : 0;
+  } catch(e) {}
+  const ratingDisplay = user.rating ? `⭐ ${Number(user.rating).toFixed(1)}` : '—';
+
   document.getElementById('editor-profile-content').innerHTML = `
     <div class="profile-hero">
       <div class="profile-avatar">${initials}</div>
@@ -1299,6 +1363,10 @@ function renderMonterProfileById(user, portfolio = []) {
         ${specTagsHtml}
       </div>
       ${exp ? `<div style="font-size:12px;color:var(--muted2);margin-top:4px;">📅 ${escHtml(exp)}</div>` : ''}
+      <div style="display:flex;gap:24px;justify-content:center;margin-top:14px;">
+        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:#fbbf24;">${ratingDisplay}</div><div style="font-size:11px;color:var(--muted);">Рейтинг</div></div>
+        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:18px;font-weight:700;">${monterDeals}</div><div style="font-size:11px;color:var(--muted);">Сделок</div></div>
+      </div>
     </div>
 
     ${bio ? `<div style="padding:0 20px;margin-bottom:0;"><div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;"><div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">О себе</div><div style="font-size:13px;color:var(--muted2);line-height:1.6;">${escHtml(bio)}</div></div></div>` : ''}
@@ -1319,12 +1387,28 @@ function renderMonterProfileById(user, portfolio = []) {
 }
 
 // ============ LOAD ORDERS (for editor dashboard) ============
-async function loadOrders() {
+function filterOrders(el) {
+  el.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const f = el.getAttribute('data-filter') || 'all';
+  loadOrders(f);
+}
+
+async function loadOrders(filter = 'all') {
   const container = document.getElementById('jobs-list');
   container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
 
   try {
-    const orders = await sb.select('orders', `status=eq.open&order=created_at.desc`);
+    // Cache all open orders
+    if (!state._ordersCache) {
+      state._ordersCache = await sb.select('orders', `status=eq.open&order=created_at.desc`) || [];
+    }
+    let orders = state._ordersCache;
+
+    // Filter
+    if (filter === 'urgent') orders = orders.filter(o => (o.tags||'').includes('urgent'));
+    else if (filter === 'highbudget') orders = orders.filter(o => (o.tags||'').includes('highbudget'));
+    else if (filter !== 'all') orders = orders.filter(o => (o.category||'') === filter);
 
     if (!orders || orders.length === 0) {
       container.innerHTML = `
@@ -1359,6 +1443,11 @@ function renderOrderCard(order, proposalCount, idx) {
   const date = order.created_at ? new Date(order.created_at).toLocaleDateString('ru-RU') : '';
   const statusTag = getStatusTag(order.status);
   const budget = order.price ? `${Number(order.price).toLocaleString('ru-RU')} ₽` : 'Не указан';
+  const catLabels = { reels: '📱 Reels', youtube: '🎬 YouTube', clips: '🎵 Клипы' };
+  const catTag = order.category && catLabels[order.category]
+    ? `<span class="tag tag-blue" style="font-size:10px;">${catLabels[order.category]}</span>` : '';
+  const urgentTag = (order.tags||'').includes('urgent') ? `<span class="tag tag-orange" style="font-size:10px;">📦 Срочно</span>` : '';
+  const highTag = (order.tags||'').includes('highbudget') ? `<span class="tag tag-yellow" style="font-size:10px;">💰 Высокий</span>` : '';
 
   return `
     <div class="job-card fade-up" style="animation-delay:${idx * 0.05}s" onclick="openJobDetail('${order.id}')">
@@ -1366,6 +1455,7 @@ function renderOrderCard(order, proposalCount, idx) {
         <div class="job-title">${escHtml(order.title)}</div>
         <div class="job-budget">${budget}</div>
       </div>
+      ${catTag || urgentTag || highTag ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">${catTag}${urgentTag}${highTag}</div>` : ''}
       <div class="job-desc">${escHtml(order.description || '')}</div>
       <div class="job-footer">
         <div class="job-meta">
@@ -1433,13 +1523,13 @@ async function openJobDetail(orderId) {
         </div>
       </div>
 
-      <div class="client-row">
+      <div class="client-row" style="cursor:pointer;" onclick="viewClientProfile('${order.client_id}')">
         <div class="avatar" style="width:36px;height:36px;font-size:12px;background:var(--bg3);">${clientName.slice(0,2).toUpperCase()}</div>
-        <div>
+        <div style="flex:1;">
           <div style="font-size:13px;font-weight:600;">${escHtml(clientName)}</div>
-          <div style="font-size:11px;color:var(--muted);">Заказчик</div>
+          <div style="font-size:11px;color:var(--muted);">Заказчик — нажмите для профиля</div>
         </div>
-        ${!isClientRole && clientUsername ? `<button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="openTelegramUser('${clientUsername}')">Написать</button>` : ''}
+        ${!isClientRole && clientUsername ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openTelegramUser('${clientUsername}')">Написать</button>` : ''}
       </div>`;
 
     // Show appropriate section
@@ -1450,12 +1540,19 @@ async function openJobDetail(orderId) {
       // Check if monter already submitted a proposal
       const myProposals = await sb.select('proposals', `order_id=eq.${orderId}&monter_id=eq.${state.user.id}&limit=1`);
       if (myProposals && myProposals.length > 0) {
+        const myP = myProposals[0];
+        const isDone = order.status === 'done';
+        const isAccepted = myP.status === 'accepted';
+        const reviewBtn = (isDone && isAccepted)
+          ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="showReviewModal('${order.client_id}','${orderId}','client')">⭐ Оценить заказчика</button>`
+          : '';
         document.getElementById('editor-response-section').innerHTML = `
           <div style="padding:20px;">
             <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px;text-align:center;">
-              <div style="font-size:20px;margin-bottom:8px;">✅</div>
-              <div style="font-weight:600;color:#4ade80;margin-bottom:4px;">Отклик отправлен</div>
-              <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${Number(myProposals[0].price).toLocaleString('ru-RU')} ₽</div>
+              <div style="font-size:20px;margin-bottom:8px;">${isAccepted ? '🎉' : '✅'}</div>
+              <div style="font-weight:600;color:#4ade80;margin-bottom:4px;">${isAccepted ? 'Вы выбраны!' : 'Отклик отправлен'}</div>
+              <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${Number(myP.price).toLocaleString('ru-RU')} ₽</div>
+              ${reviewBtn}
             </div>
           </div>`;
         document.getElementById('editor-response-section').style.display = 'block';
@@ -1476,46 +1573,79 @@ async function loadProposals(orderId) {
   container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка откликов...</div>';
 
   try {
-    const proposals = await sb.select('proposals', `order_id=eq.${orderId}&order=created_at.asc`);
+    // Get order to know current status
+    const orderRows = await sb.select('orders', `id=eq.${orderId}&limit=1`);
+    const order = orderRows?.[0] || {};
 
+    const proposals = await sb.select('proposals', `order_id=eq.${orderId}&order=created_at.asc`);
     if (!proposals || proposals.length === 0) {
       container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Откликов пока нет</div><div class="empty-state-desc">Монтажёры ещё не откликнулись на ваш заказ</div></div>';
       return;
     }
 
-    // Get monter names
+    // Get monter details including experience
     const monterIds = [...new Set(proposals.map(p => p.monter_id))];
     let monters = {};
     try {
-      const users = await sb.select('users', `id=in.(${monterIds.join(',')})&select=id,username`);
+      const users = await sb.select('users', `id=in.(${monterIds.join(',')})&select=id,username,tg_username,experience,rating`);
       if (users) users.forEach(u => monters[u.id] = u);
     } catch(e) {}
 
-    container.innerHTML = proposals.map(p => {
+    // Get completed deal counts per monter
+    let dealCounts = {};
+    try {
+      for (const mid of monterIds) {
+        const deals = await sb.select('reviews', `reviewee_id=eq.${mid}&deal_happened=eq.true&select=id`);
+        dealCounts[mid] = deals ? deals.length : 0;
+      }
+    } catch(e) {}
+
+    // Show complete/cancel buttons if order is in_progress and it's client's own
+    const isMyOrder = state.user && order.client_id === state.user.id;
+    const isInProgress = order.status === 'in_progress';
+
+    let actionBtns = '';
+    if (isMyOrder && isInProgress) {
+      actionBtns = `
+        <div style="display:flex;gap:8px;padding:0 20px 16px;">
+          <button class="btn btn-primary btn-sm" style="flex:1;" onclick="markOrderDone('${orderId}')">✅ Заказ выполнен</button>
+          <button class="btn btn-danger btn-sm" style="flex:1;" onclick="cancelOrder('${orderId}')">❌ Отменить</button>
+        </div>`;
+    }
+
+    container.innerHTML = actionBtns + proposals.map(p => {
       const m = monters[p.monter_id] || {};
       const name = m.username || 'Монтажёр';
       const initials = name.slice(0, 2).toUpperCase();
+      const tgHandle = m.tg_username || m.username || '';
       const price = p.price ? `${Number(p.price).toLocaleString('ru-RU')} ₽` : 'Не указана';
       const statusTag = p.status === 'accepted' ? '<span class="tag tag-green">✅ Принят</span>' :
                         p.status === 'rejected' ? '<span class="tag tag-gray">Отклонён</span>' :
                         '<span class="tag tag-yellow">⏳ Ждёт</span>';
+      const exp = m.experience ? `<span style="font-size:11px;color:var(--muted2);">📅 ${escHtml(m.experience)}</span>` : '';
+      const deals = dealCounts[p.monter_id] || 0;
+      const dealBadge = `<span style="font-size:11px;color:var(--muted2);">✅ ${deals} ${declension(deals, ['сделка','сделки','сделок'])}</span>`;
+      const rating = m.rating ? `<span style="font-size:11px;color:#fbbf24;">⭐ ${Number(m.rating).toFixed(1)}</span>` : '';
+
       return `
         <div class="response-card">
           <div class="review-header">
-            <div class="avatar" style="width:36px;height:36px;font-size:13px;background:var(--bg3);">${initials}</div>
+            <div class="avatar" style="width:40px;height:40px;font-size:14px;background:var(--bg3);cursor:pointer;" onclick="viewMonterProfile('${p.monter_id}')">${initials}</div>
             <div style="flex:1;">
-              <div style="font-weight:600;font-size:13px;">${escHtml(name)}</div>
-              ${statusTag}
+              <div style="font-weight:600;font-size:13px;cursor:pointer;" onclick="viewMonterProfile('${p.monter_id}')">${escHtml(name)}</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;">${statusTag}</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">${exp}${dealBadge}${rating}</div>
             </div>
             <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--accent);">${price}</div>
           </div>
           ${p.comment ? `<div style="font-size:13px;color:var(--muted2);line-height:1.5;margin:8px 0 10px;">${escHtml(p.comment)}</div>` : ''}
-          <div style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             ${p.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="acceptProposal('${p.id}','${orderId}')">Выбрать</button>` : ''}
-            ${m.username ? `<button class="btn btn-secondary btn-sm" onclick="openTelegramUser('${m.username}')">
+            ${tgHandle ? `<button class="btn btn-secondary btn-sm" onclick="openTelegramUser('${tgHandle}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
               Написать
             </button>` : ''}
+            ${p.status === 'accepted' && order.status === 'done' ? `<button class="btn btn-ghost btn-sm" onclick="showReviewModal('${p.monter_id}','${orderId}','monter')">⭐ Оценить</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -1528,13 +1658,178 @@ async function loadProposals(orderId) {
 // ============ ACCEPT PROPOSAL ============
 async function acceptProposal(proposalId, orderId) {
   try {
+    // Get monter_id from proposal
+    const props = await sb.select('proposals', `id=eq.${proposalId}&limit=1`);
+    const monterId = props?.[0]?.monter_id || null;
     await sb.update('proposals', { status: 'accepted' }, `id=eq.${proposalId}`);
-    await sb.update('orders', { status: 'in_progress', monter_id: null }, `id=eq.${orderId}`);
+    await sb.update('orders', { status: 'in_progress', monter_id: monterId }, `id=eq.${orderId}`);
+    state._ordersCache = null;
     showToast('✅ Монтажёр выбран!', 'success');
     await loadProposals(orderId);
   } catch(e) {
     console.error('acceptProposal error:', e);
     showToast('❌ ' + sbError(e).slice(0, 100));
+  }
+}
+
+// ============ ORDER DONE / CANCEL ============
+async function markOrderDone(orderId) {
+  try {
+    await sb.update('orders', { status: 'done' }, `id=eq.${orderId}`);
+    state._ordersCache = null;
+    showToast('✅ Заказ отмечен как выполненный', 'success');
+    await loadProposals(orderId);
+    // Reload job detail hero to show new status
+    const orders = await sb.select('orders', `id=eq.${orderId}&limit=1`);
+    if (orders?.[0]) {
+      const o = orders[0];
+      document.querySelector('#job-detail-content .tag') &&
+        (document.querySelector('#job-detail-content .tag').textContent = getStatusLabel(o.status));
+    }
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
+  }
+}
+
+async function cancelOrder(orderId) {
+  try {
+    await sb.update('orders', { status: 'cancelled' }, `id=eq.${orderId}`);
+    state._ordersCache = null;
+    showToast('Заказ отменён');
+    goBackToDash();
+    await loadMyJobs();
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
+  }
+}
+
+// ============ REVIEWS ============
+function showReviewModal(revieweeId, orderId, revieweeRole) {
+  const label = revieweeRole === 'monter' ? 'монтажёра' : 'заказчика';
+  openModal(`
+    <div class="display-title" style="font-size:16px;margin-bottom:6px;">Оценить ${label}</div>
+    <p style="font-size:12px;color:var(--muted2);margin-bottom:16px;">Оценка появится только когда обе стороны оставят отзыв</p>
+    <div style="margin-bottom:16px;">
+      <div class="input-label" style="margin-bottom:8px;">Сделка состоялась?</div>
+      <div style="display:flex;gap:8px;">
+        <div class="chip active" id="deal-yes" onclick="setDeal(true)">✅ Да, состоялась</div>
+        <div class="chip" id="deal-no" onclick="setDeal(false)">❌ Нет</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="input-group">
+        <label class="input-label">Рейтинг (1-5)</label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          ${[1,2,3,4,5].map(n=>`<div class="chip" id="star-${n}" onclick="setStar(${n})" style="font-size:16px;">⭐</div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="input-group">
+        <label class="input-label">Комментарий</label>
+        <textarea class="input" rows="3" placeholder="Опишите опыт работы..." id="review-comment"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="submitReview('${revieweeId}','${orderId}','${revieweeRole}')">Отправить оценку</button>
+  `);
+  window._reviewDeal = true;
+  window._reviewStar = 5;
+  setStar(5);
+}
+
+function setDeal(val) {
+  window._reviewDeal = val;
+  document.getElementById('deal-yes').classList.toggle('active', val);
+  document.getElementById('deal-no').classList.toggle('active', !val);
+}
+function setStar(n) {
+  window._reviewStar = n;
+  [1,2,3,4,5].forEach(i => {
+    const el = document.getElementById('star-'+i);
+    if (el) el.classList.toggle('active', i <= n);
+  });
+}
+
+async function submitReview(revieweeId, orderId, revieweeRole) {
+  const comment = (document.getElementById('review-comment')?.value||'').trim();
+  try {
+    // Check if already reviewed
+    const existing = await sb.select('reviews', `reviewer_id=eq.${state.user.id}&order_id=eq.${orderId}&reviewee_id=eq.${revieweeId}&limit=1`);
+    if (existing && existing.length > 0) { showToast('⚠️ Вы уже оставили отзыв'); return; }
+
+    await sb.insert('reviews', {
+      reviewer_id: state.user.id,
+      reviewee_id: revieweeId,
+      order_id: orderId,
+      rating: window._reviewStar || 5,
+      comment: comment,
+      deal_happened: window._reviewDeal !== false,
+      reviewer_role: state.role,
+    });
+
+    // Recalculate average rating for reviewee
+    await recalcRating(revieweeId);
+
+    document.getElementById('modal').classList.remove('show');
+    showToast('✅ Оценка сохранена!', 'success');
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
+  }
+}
+
+async function recalcRating(userId) {
+  try {
+    const reviews = await sb.select('reviews', `reviewee_id=eq.${userId}&select=rating`);
+    if (!reviews || reviews.length === 0) return;
+    const avg = reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length;
+    await sb.update('users', { rating: Math.round(avg * 10) / 10 }, `id=eq.${userId}`);
+  } catch(e) {}
+}
+
+// Client profile view
+async function viewClientProfile(clientId) {
+  const screen = document.getElementById('client-profile-content');
+  screen.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+  navigate('screen-client-profile');
+  try {
+    const users = await sb.select('users', `id=eq.${clientId}&limit=1`);
+    const user = users?.[0];
+    if (!user) { screen.innerHTML = '<div class="empty-state">⚠️ Не найдено</div>'; return; }
+
+    // Count successful deals as client
+    let successDeals = 0;
+    try {
+      const r = await sb.select('reviews', `reviewee_id=eq.${clientId}&deal_happened=eq.true&select=id`);
+      successDeals = r ? r.length : 0;
+    } catch(e) {}
+
+    const name = user.username || 'Заказчик';
+    const initials = name.slice(0,2).toUpperCase();
+    const tgHandle = user.tg_username || '';
+    const rating = user.rating ? `⭐ ${Number(user.rating).toFixed(1)}` : 'Нет оценок';
+    const dealLabel = successDeals + ' ' + declension(successDeals, ['успешная сделка','успешные сделки','успешных сделок']);
+
+    screen.innerHTML = `
+      <div class="profile-hero">
+        <div class="profile-avatar">${initials}</div>
+        <div class="profile-name">${escHtml(name)}</div>
+        <div class="profile-handle">${tgHandle ? '@'+tgHandle+' • ' : ''}Заказчик</div>
+        <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;">
+          <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--accent);">${rating}</div><div style="font-size:11px;color:var(--muted);">Рейтинг</div></div>
+          <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:18px;font-weight:700;">${successDeals}</div><div style="font-size:11px;color:var(--muted);">Сделок</div></div>
+        </div>
+      </div>
+      <div style="padding:16px 20px 100px;">
+        <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;">
+          <div style="font-size:13px;font-weight:600;color:#4ade80;">${dealLabel}</div>
+        </div>
+        ${tgHandle ? `<button class="connect-btn" onclick="openTelegramUser('${tgHandle}')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
+          Написать в Telegram
+        </button>` : ''}
+      </div>`;
+  } catch(e) {
+    screen.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка</div></div>';
   }
 }
 
@@ -1765,6 +2060,7 @@ async function renderMyProfile() {
         <div style="font-size:12px;color:var(--muted2);margin-bottom:4px;">Telegram ID</div>
         <div style="font-size:13px;">${state.tgUser?.id || '—'}</div>
       </div>
+      ${isAdmin() ? `<button class="btn btn-secondary" style="margin-bottom:10px;" onclick="openAdminPanel()">🛡 Панель администратора</button>` : ''}
       <button class="btn btn-danger" onclick="logout()">Сменить роль / Выйти</button>
     </div>
     <div class="scroll-pad"></div>`;
@@ -1932,7 +2228,7 @@ async function submitJob() {
   btn.disabled = true;
   btn.textContent = 'Публикуем...';
 
-  // Schema: orders(id, created_at, client_id, monter_id, title, description, status, price)
+  // Schema: orders(id, created_at, client_id, monter_id, title, description, status, price, category, tags)
   const payload = {
     client_id: state.user.id,
     monter_id: null,
@@ -1940,6 +2236,8 @@ async function submitJob() {
     description: desc,
     price: Number(budget),
     status: 'open',
+    category: window._jobCat || null,
+    tags: window._jobTypes ? window._jobTypes.join(',') : null,
   };
 
   try {
@@ -1950,6 +2248,9 @@ async function submitJob() {
     document.getElementById('job-desc').value = '';
     document.getElementById('job-budget').value = '';
     document.getElementById('job-deadline').value = '';
+    window._jobCat = null; window._jobTypes = [];
+    ['reels','youtube','clips'].forEach(c => { const b=document.getElementById('jcat-'+c); if(b) b.classList.remove('active'); });
+    ['urgent','highbudget'].forEach(t => { const b=document.getElementById('jtype-'+t); if(b) b.classList.remove('active'); });
     setTimeout(() => {
       goBackToDash();
       if (state.role === 'client') loadMyJobs();
@@ -2088,6 +2389,25 @@ function selectRole(role) {
 
 // Track selected specialties
 window._selectedSpecs = [];
+
+// Track job category/type on create form
+window._jobCat = null;
+window._jobTypes = [];
+function toggleJobCat(cat) {
+  const prev = window._jobCat;
+  window._jobCat = (prev === cat) ? null : cat;
+  ['reels','youtube','clips'].forEach(c => {
+    const b = document.getElementById('jcat-'+c);
+    if (b) b.classList.toggle('active', window._jobCat === c);
+  });
+}
+function toggleJobType(type) {
+  if (!window._jobTypes) window._jobTypes = [];
+  const idx = window._jobTypes.indexOf(type);
+  const btn = document.getElementById('jtype-'+type);
+  if (idx === -1) { window._jobTypes.push(type); if(btn) btn.classList.add('active'); }
+  else { window._jobTypes.splice(idx,1); if(btn) btn.classList.remove('active'); }
+}
 function toggleSpec(spec) {
   const btn = document.getElementById('spec-' + spec);
   const idx = window._selectedSpecs.indexOf(spec);
@@ -2166,6 +2486,70 @@ async function completeSetup() {
     showToast('❌ Ошибка сохранения');
     btn.disabled = false;
     btn.textContent = 'Готово — открыть приложение 🚀';
+  }
+}
+
+// ============ ADMIN ============
+const ADMIN_IDS = ['7847785699', '6288239521'];
+function isAdmin() {
+  return ADMIN_IDS.includes(String(state.tgUser?.id));
+}
+
+async function openAdminPanel() {
+  if (!isAdmin()) { showToast('⛔ Нет доступа'); return; }
+  navigate('screen-admin');
+  await adminSearch();
+}
+
+async function adminSearch() {
+  if (!isAdmin()) return;
+  const q = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+  const container = document.getElementById('admin-users-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+  try {
+    let users;
+    if (q) {
+      users = await sb.select('users', `username=ilike.*${q}*&order=created_at.desc&limit=30`);
+    } else {
+      users = await sb.select('users', `order=created_at.desc&limit=50`);
+    }
+    if (!users || users.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Не найдено</div></div>';
+      return;
+    }
+    container.innerHTML = users.map(u => {
+      const banned = u.is_banned;
+      const roleTag = u.role === 'client' ? '<span class="tag tag-blue">Заказчик</span>' :
+                      u.role === 'monter' ? '<span class="tag tag-green">Монтажёр</span>' :
+                      '<span class="tag tag-gray">Нет роли</span>';
+      return `
+        <div class="job-card" style="${banned ? 'opacity:0.5;border-color:rgba(255,80,80,0.3);' : ''}">
+          <div class="job-card-header">
+            <div>
+              <div style="font-weight:600;font-size:13px;">${escHtml(u.username||'—')}</div>
+              <div style="font-size:11px;color:var(--muted);">TG: ${u.telegram_id} ${banned?'🚫 Заблокирован':''}</div>
+            </div>
+            ${roleTag}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn ${banned?'btn-ghost':'btn-danger'} btn-sm" onclick="adminBanUser('${u.id}',${!banned})">
+              ${banned ? '✅ Разблокировать' : '🚫 Заблокировать'}
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка</div></div>';
+  }
+}
+
+async function adminBanUser(userId, ban) {
+  try {
+    await sb.update('users', { is_banned: ban }, `id=eq.${userId}`);
+    showToast(ban ? '🚫 Пользователь заблокирован' : '✅ Разблокирован', 'success');
+    await adminSearch();
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
   }
 }
 
