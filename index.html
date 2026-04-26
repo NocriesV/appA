@@ -2,8 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Editex — Биржа монтажёров</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -34,34 +35,14 @@
     font-size: 14px;
   }
 
-  /* PHONE SHELL */
-  .phone-shell {
-    width: 390px;
-    min-height: 844px;
-    background: var(--bg);
-    margin: 20px auto;
-    border-radius: 50px;
-    border: 2px solid rgba(255,255,255,0.1);
-    box-shadow: 0 40px 120px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .phone-notch {
-    height: 36px;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .notch-cam { width: 12px; height: 12px; background: #1a1a1a; border-radius: 50%; border: 1px solid #333; }
-  .notch-speaker { width: 60px; height: 6px; background: #1a1a1a; border-radius: 3px; }
-
+  /* APP CONTAINER — no phone shell */
   .app {
-    height: 808px;
-    overflow: hidden;
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: 0 auto;
     position: relative;
+    overflow: hidden;
     background: var(--bg);
   }
 
@@ -76,6 +57,7 @@
     transform: translateX(20px);
     transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     scrollbar-width: none;
+    min-height: 100vh;
   }
   .screen::-webkit-scrollbar { display: none; }
   .screen.active {
@@ -83,9 +65,7 @@
     pointer-events: all;
     transform: translateX(0);
   }
-  .screen.slide-back {
-    transform: translateX(-20px);
-  }
+  .screen.slide-back { transform: translateX(-20px); }
 
   /* BOTTOM NAV */
   .bottom-nav {
@@ -93,11 +73,12 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 390px;
+    width: 100%;
+    max-width: 480px;
     background: rgba(13,13,15,0.95);
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--border);
-    padding: 10px 0 20px;
+    padding: 10px 0 max(20px, env(safe-area-inset-bottom));
     display: flex;
     z-index: 100;
     transition: opacity 0.2s;
@@ -116,28 +97,14 @@
     transition: all 0.15s;
   }
   .nav-item:active { transform: scale(0.9); }
-  .nav-icon {
-    width: 24px; height: 24px;
-    color: var(--muted);
-    transition: color 0.15s;
-  }
-  .nav-label {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-weight: 500;
-    transition: color 0.15s;
-  }
+  .nav-icon { width: 24px; height: 24px; color: var(--muted); transition: color 0.15s; }
+  .nav-label { font-size: 10px; color: var(--muted); font-family: var(--font-body); font-weight: 500; transition: color 0.15s; }
   .nav-item.active .nav-icon,
   .nav-item.active .nav-label { color: var(--accent); }
   .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--accent)); }
 
   /* TYPOGRAPHY */
-  .display-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
+  .display-title { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
 
   /* BUTTONS */
   .btn {
@@ -158,34 +125,14 @@
     letter-spacing: 0.01em;
   }
   .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
+  .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: #d4e83f; }
-
-  .btn-secondary {
-    background: var(--bg3);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid rgba(232,255,71,0.3);
-  }
-  .btn-danger {
-    background: rgba(255, 80, 80, 0.1);
-    color: #ff5050;
-    border: 1px solid rgba(255,80,80,0.2);
-  }
-  .btn-sm {
-    padding: 8px 16px;
-    font-size: 12px;
-    border-radius: 10px;
-    width: auto;
-  }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost { background: transparent; color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
+  .btn-danger { background: rgba(255,80,80,0.1); color: #ff5050; border: 1px solid rgba(255,80,80,0.2); }
+  .btn-sm { padding: 8px 16px; font-size: 12px; border-radius: 10px; width: auto; }
 
   /* CARDS */
   .card {
@@ -198,28 +145,16 @@
   .card:active { border-color: rgba(255,255,255,0.15); }
 
   /* TAGS */
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
+  .tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
   .tag-green { background: rgba(74,222,128,0.15); color: #4ade80; }
   .tag-yellow { background: rgba(232,255,71,0.15); color: var(--accent); }
   .tag-orange { background: rgba(255,107,53,0.15); color: var(--accent2); }
   .tag-blue { background: rgba(96,165,250,0.15); color: #60a5fa; }
   .tag-gray { background: rgba(255,255,255,0.08); color: var(--muted2); }
 
-  /* STARS */
-  .stars { color: #fbbf24; letter-spacing: 1px; }
-
   /* AVATAR */
   .avatar {
     border-radius: 50%;
-    object-fit: cover;
     background: linear-gradient(135deg, #2a2a2f, #1a1a1f);
     display: flex; align-items: center; justify-content: center;
     font-family: var(--font-display);
@@ -247,9 +182,6 @@
   .input:focus { border-color: rgba(232,255,71,0.4); }
   .input::placeholder { color: var(--muted); }
 
-  /* DIVIDER */
-  .divider { height: 1px; background: var(--border); margin: 4px 0; }
-
   /* PAGE HEADER */
   .page-header {
     padding: 16px 20px 12px;
@@ -276,17 +208,9 @@
   .back-btn:active { transform: scale(0.9); }
 
   /* BADGE */
-  .badge {
-    background: var(--accent);
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-family: var(--font-display);
-  }
+  .badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; font-family: var(--font-display); }
 
-  /* ======================== SCREEN: ONBOARDING ======================== */
+  /* ONBOARDING */
   #screen-onboarding {
     background: var(--bg);
     display: flex;
@@ -294,9 +218,8 @@
     align-items: center;
     justify-content: center;
     padding: 40px 28px;
-    min-height: 808px;
+    min-height: 100vh;
   }
-
   .onboarding-logo {
     width: 80px; height: 80px;
     background: var(--accent);
@@ -305,9 +228,7 @@
     margin-bottom: 32px;
     box-shadow: 0 20px 60px rgba(232,255,71,0.25);
   }
-
   .role-cards { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 28px 0; }
-
   .role-card {
     background: var(--card);
     border: 2px solid var(--border);
@@ -322,19 +243,13 @@
   .role-card:hover { border-color: rgba(232,255,71,0.3); }
   .role-card.selected { border-color: var(--accent); background: rgba(232,255,71,0.05); }
   .role-card:active { transform: scale(0.98); }
-
   .role-emoji { font-size: 36px; }
   .role-info h3 { font-family: var(--font-display); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
   .role-info p { font-size: 12px; color: var(--muted2); line-height: 1.5; }
 
-  /* ======================== SCREEN: CLIENT DASHBOARD ======================== */
-  .dash-header {
-    padding: 20px 20px 0;
-    background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
-  }
-
+  /* DASHBOARD */
+  .dash-header { padding: 20px 20px 0; background: linear-gradient(180deg, var(--bg) 0%, transparent 100%); }
   .dash-greeting { font-size: 12px; color: var(--muted2); margin-bottom: 2px; }
-
   .search-bar {
     margin: 16px 0;
     background: var(--bg3);
@@ -346,10 +261,7 @@
     gap: 10px;
     color: var(--muted);
     cursor: pointer;
-    transition: border-color 0.15s;
   }
-  .search-bar:hover { border-color: rgba(255,255,255,0.15); }
-
   .filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
   .filter-chips::-webkit-scrollbar { display: none; }
   .chip {
@@ -376,6 +288,7 @@
     margin: 20px 20px 12px;
   }
 
+  /* EDITOR CARD */
   .editor-card {
     margin: 0 20px 12px;
     background: var(--card);
@@ -387,7 +300,6 @@
   }
   .editor-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
   .editor-card:active { transform: scale(0.99); }
-
   .editor-card-top { display: flex; gap: 12px; align-items: flex-start; }
   .editor-meta { flex: 1; }
   .editor-name { font-family: var(--font-display); font-size: 13px; font-weight: 600; margin-bottom: 3px; }
@@ -396,9 +308,7 @@
   .editor-rating { font-size: 12px; font-weight: 600; color: #fbbf24; }
   .editor-price { font-size: 12px; font-weight: 600; color: var(--accent); }
   .editor-reviews { font-size: 11px; color: var(--muted); }
-
   .editor-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-
   .portfolio-strip { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
   .portfolio-strip::-webkit-scrollbar { display: none; }
   .portfolio-thumb {
@@ -407,10 +317,9 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 20px;
     border: 1px solid var(--border);
-    overflow: hidden;
   }
 
-  /* ======================== SCREEN: EDITOR DASHBOARD ======================== */
+  /* JOB CARD */
   .job-card {
     margin: 0 20px 12px;
     background: var(--card);
@@ -421,7 +330,6 @@
     transition: all 0.18s;
   }
   .job-card:active { transform: scale(0.99); }
-
   .job-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
   .job-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.3; flex: 1; padding-right: 10px; }
   .job-budget { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
@@ -431,16 +339,13 @@
   .job-meta { display: flex; gap: 12px; }
   .job-meta-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
 
-  /* ======================== SCREEN: CREATE JOB ======================== */
+  /* CREATE FORM */
   .create-form { padding: 20px; padding-bottom: 100px; }
   .form-row { margin-bottom: 16px; }
   .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 
-  /* ======================== SCREEN: JOB DETAIL ======================== */
-  .job-detail-hero {
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+  /* JOB DETAIL */
+  .job-detail-hero { padding: 20px; border-bottom: 1px solid var(--border); }
   .client-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
   .response-card {
     margin: 0 20px 12px;
@@ -452,12 +357,8 @@
   }
   .response-card:hover { border-color: rgba(255,255,255,0.12); }
 
-  /* ======================== SCREEN: EDITOR PROFILE ======================== */
-  .profile-hero {
-    padding: 28px 20px 20px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-  }
+  /* PROFILE */
+  .profile-hero { padding: 28px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
   .profile-avatar {
     width: 88px; height: 88px;
     border-radius: 50%;
@@ -469,7 +370,6 @@
     font-weight: 700;
     color: var(--accent);
     border: 3px solid var(--border);
-    box-shadow: 0 0 0 6px rgba(232,255,71,0.04);
   }
   .profile-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 4px; }
   .profile-handle { font-size: 13px; color: var(--muted2); margin-bottom: 14px; }
@@ -477,26 +377,20 @@
   .profile-stat { text-align: center; }
   .profile-stat-value { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
   .profile-stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .review-item {
-    padding: 14px;
-    border-bottom: 1px solid var(--border);
-  }
+  .review-item { padding: 14px; border-bottom: 1px solid var(--border); }
   .review-item:last-child { border-bottom: none; }
   .review-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .review-text { font-size: 13px; color: var(--muted2); line-height: 1.5; }
-
-  /* ======================== SCREEN: MY PROFILE ======================== */
   .my-profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 20px; }
   .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
   .stat-card-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--accent); }
   .stat-card-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-  /* ======================== FLOATING ACTION BTN ======================== */
+  /* FAB */
   .fab {
     position: fixed;
     bottom: 80px;
-    right: calc(50% - 175px);
+    right: max(16px, calc(50% - 220px));
     width: 52px; height: 52px;
     background: var(--accent);
     border-radius: 16px;
@@ -506,11 +400,10 @@
     transition: all 0.15s;
     z-index: 99;
   }
-  .fab:hover { transform: scale(1.05); }
   .fab:active { transform: scale(0.95); }
   .fab.hidden { opacity: 0; pointer-events: none; }
 
-  /* ======================== ONBOARDING PROFILE SETUP ======================== */
+  /* SETUP */
   #screen-setup { padding: 24px 20px; padding-bottom: 100px; }
 
   /* ANIMATIONS */
@@ -523,7 +416,6 @@
   .fade-up-2 { animation-delay: 0.1s; }
   .fade-up-3 { animation-delay: 0.15s; }
   .fade-up-4 { animation-delay: 0.2s; }
-  .fade-up-5 { animation-delay: 0.25s; }
 
   /* TOAST */
   .toast {
@@ -543,6 +435,7 @@
     transition: all 0.25s;
     white-space: nowrap;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.success { border-color: rgba(74,222,128,0.3); color: #4ade80; }
@@ -556,13 +449,15 @@
     z-index: 200;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s;
   }
   .modal-overlay.show { opacity: 1; pointer-events: all; }
   .modal-sheet {
-    width: 390px;
+    width: 100%;
+    max-width: 480px;
     background: var(--bg2);
     border-radius: 24px 24px 0 0;
     border: 1px solid var(--border);
@@ -578,64 +473,92 @@
   .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
 
   /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted2);
-  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted2); }
   .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
   .empty-state-title { font-family: var(--font-display); font-size: 16px; color: var(--text); margin-bottom: 8px; }
   .empty-state-desc { font-size: 13px; line-height: 1.5; }
 
-  /* SCROLL PADDING */
-  .scroll-pad { height: 80px; }
+  /* LOADING */
+  .loader {
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px;
+    gap: 8px;
+    color: var(--muted2);
+    font-size: 13px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
 
-  /* PROGRESS DOTS */
+  /* MISC */
+  .scroll-pad { height: 100px; }
+  .screen-content { padding-bottom: 80px; }
   .progress-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 32px; }
   .dot { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: all 0.2s; }
   .dot.active { background: var(--accent); width: 24px; }
-
-  /* CONNECT BUTTON */
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; flex-shrink: 0; }
   .connect-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
     padding: 14px 16px;
     background: rgba(38,182,255,0.1);
     border: 1px solid rgba(38,182,255,0.25);
     border-radius: 14px;
     color: #26b6ff;
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 600; font-size: 14px;
     cursor: pointer;
     transition: all 0.15s;
     width: 100%;
     margin: 20px 0 0;
   }
-  .connect-btn:hover { background: rgba(38,182,255,0.15); }
   .connect-btn:active { transform: scale(0.97); }
 
-  /* STATUS indicator */
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; flex-shrink: 0; }
-
-  /* SCROLL TOP PADDING */
-  .screen-content { padding-bottom: 80px; }
+  /* LOADING SCREEN */
+  #screen-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 16px;
+  }
+  .loading-logo {
+    width: 72px; height: 72px;
+    background: var(--accent);
+    border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,255,71,0.4); }
+    50% { box-shadow: 0 0 0 16px rgba(232,255,71,0); }
+  }
 </style>
 </head>
 <body>
 
-<div class="phone-shell">
-  <div class="phone-notch">
-    <div class="notch-cam"></div>
-    <div class="notch-speaker"></div>
-    <div class="notch-cam"></div>
+<div class="app" id="app">
+
+  <!-- =================== LOADING =================== -->
+  <div class="screen active" id="screen-loading">
+    <div class="loading-logo">
+      <svg width="40" height="40" viewBox="0 0 44 44" fill="none">
+        <path d="M8 12L22 6L36 12V24C36 31.7 29.5 38 22 40C14.5 38 8 31.7 8 24V12Z" fill="#000" opacity="0.6"/>
+        <path d="M17 22L20.5 25.5L27 18" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="display-title" style="font-size:20px;">Editex</div>
+    <div style="color:var(--muted2);font-size:13px;">Загрузка...</div>
   </div>
 
-  <div class="app" id="app">
-
-    <!-- =================== ONBOARDING =================== -->
-    <div class="screen active" id="screen-onboarding">
-      <div style="text-align:center; width:100%; max-width:340px;">
+  <!-- =================== ONBOARDING =================== -->
+  <div class="screen" id="screen-onboarding">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;">
+      <div style="width:100%;max-width:340px;text-align:center;">
         <div class="onboarding-logo" style="margin:0 auto 32px;">
           <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
             <path d="M8 12L22 6L36 12V24C36 31.7 29.5 38 22 40C14.5 38 8 31.7 8 24V12Z" fill="#000" opacity="0.6"/>
@@ -651,14 +574,14 @@
           <div class="dot" id="dot3"></div>
         </div>
 
-        <h1 class="display-title fade-up" style="font-size:26px; line-height:1.15; margin-bottom:10px;">
+        <h1 class="display-title fade-up" style="font-size:26px;line-height:1.15;margin-bottom:10px;">
           Биржа<br>видеомонтажёров
         </h1>
-        <p class="fade-up fade-up-1" style="color:var(--muted2); font-size:14px; line-height:1.6; margin-bottom:36px;">
+        <p class="fade-up fade-up-1" style="color:var(--muted2);font-size:14px;line-height:1.6;margin-bottom:36px;">
           Находите заказчиков и исполнителей быстро — прямо в Telegram
         </p>
 
-        <p class="fade-up fade-up-2" style="font-size:12px; color:var(--muted); margin-bottom:16px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
+        <p class="fade-up fade-up-2" style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">
           Кто вы?
         </p>
 
@@ -687,614 +610,294 @@
           </div>
         </div>
 
-        <div class="fade-up fade-up-4" id="continue-btn-wrap" style="width:100%; display:none;">
+        <div class="fade-up fade-up-4" id="continue-btn-wrap" style="width:100%;display:none;">
           <button class="btn btn-primary" onclick="goToSetup()">Продолжить →</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- =================== SETUP PROFILE =================== -->
-    <div class="screen" id="screen-setup">
-      <div class="page-header">
-        <div class="back-btn" onclick="goBack('screen-onboarding')">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <span class="display-title" style="font-size:15px;">Настройка профиля</span>
+  <!-- =================== SETUP PROFILE =================== -->
+  <div class="screen" id="screen-setup">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('screen-onboarding')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Настройка профиля</span>
+    </div>
+
+    <div style="padding:24px 20px;">
+      <div class="progress-dots" style="justify-content:flex-start;margin-bottom:24px;">
+        <div class="dot" id="dot-s1"></div>
+        <div class="dot active" id="dot-s2"></div>
+        <div class="dot" id="dot-s3"></div>
       </div>
 
-      <div style="padding:24px 20px;">
-        <div class="progress-dots" style="justify-content:flex-start; margin-bottom:24px;">
-          <div class="dot" id="dot-s1"></div>
-          <div class="dot active" id="dot-s2"></div>
-          <div class="dot" id="dot-s3"></div>
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Ваше имя *</label>
+          <input class="input" placeholder="Иван Петров" id="setup-name">
+        </div>
+      </div>
+
+      <div class="form-row" id="editor-bio-row">
+        <div class="input-group">
+          <label class="input-label">О себе</label>
+          <textarea class="input" rows="3" placeholder="Расскажите о своём опыте и специализации..." id="setup-bio"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row-2" id="editor-price-row">
+        <div class="input-group">
+          <label class="input-label">Цена от (₽)</label>
+          <input class="input" type="number" placeholder="5000" id="setup-price-from">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Цена до (₽)</label>
+          <input class="input" type="number" placeholder="30000" id="setup-price-to">
+        </div>
+      </div>
+
+      <div class="form-row" id="editor-portfolio-row">
+        <div class="input-group">
+          <label class="input-label">Портфолио (ссылки через запятую)</label>
+          <textarea class="input" rows="2" placeholder="https://youtube.com/..." id="setup-portfolio"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="completeSetup()" id="setup-btn" style="margin-top:8px;">Готово — открыть приложение 🚀</button>
+    </div>
+    <div class="scroll-pad"></div>
+  </div>
+
+  <!-- =================== CLIENT DASHBOARD =================== -->
+  <div class="screen" id="screen-client-dashboard">
+    <div class="screen-content">
+      <div class="dash-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:4px;">
+          <div>
+            <div class="dash-greeting">Добро пожаловать,</div>
+            <div class="display-title" style="font-size:20px;" id="client-greeting">... 👋</div>
+          </div>
+          <div class="avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#e8ff47,#a3b71a);" id="client-avatar" onclick="navigate('screen-my-profile')">?</div>
         </div>
 
-        <div class="form-row">
-          <div class="input-group">
-            <label class="input-label">Ваше имя *</label>
-            <input class="input" placeholder="Иван Петров" value="Алексей Волков" id="setup-name">
-          </div>
+        <div class="search-bar" onclick="showToast('🔍 Поиск в разработке')">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b6b72" stroke-width="1.5"/><path d="M11 11L14 14" stroke="#6b6b72" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="font-size:13px;">Поиск монтажёров...</span>
         </div>
 
-        <div class="form-row" id="editor-bio-row">
-          <div class="input-group">
-            <label class="input-label">О себе</label>
-            <textarea class="input" rows="3" placeholder="Расскажите о своём опыте и специализации..." id="setup-bio">Монтирую видео для YouTube и рекламы. 5 лет опыта, работал с брендами Samsung, Sber.</textarea>
-          </div>
+        <div class="filter-chips">
+          <div class="chip active" onclick="filterChip(this)">Все</div>
+          <div class="chip" onclick="filterChip(this)">⭐ Топ</div>
+          <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
+          <div class="chip" onclick="filterChip(this)">📱 Reels/Shorts</div>
+          <div class="chip" onclick="filterChip(this)">🎵 Клипы</div>
         </div>
+      </div>
 
-        <div class="form-row-2" id="editor-price-row">
-          <div class="input-group">
-            <label class="input-label">Цена от (₽)</label>
-            <input class="input" type="number" placeholder="5000" value="5000" id="setup-price-from">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Цена до (₽)</label>
-            <input class="input" type="number" placeholder="30000" value="30000" id="setup-price-to">
-          </div>
-        </div>
-
-        <div class="form-row" id="editor-portfolio-row">
-          <div class="input-group">
-            <label class="input-label">Портфолио (ссылки через запятую)</label>
-            <textarea class="input" rows="2" placeholder="https://youtube.com/..." id="setup-portfolio">https://youtube.com/watch?v=abc123, https://vimeo.com/example</textarea>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="completeSetup()" style="margin-top:8px;">Готово — открыть приложение 🚀</button>
+      <div class="section-title">Монтажёры</div>
+      <div id="editors-list">
+        <div class="loader"><div class="spinner"></div> Загрузка...</div>
       </div>
       <div class="scroll-pad"></div>
     </div>
-
-    <!-- =================== CLIENT DASHBOARD =================== -->
-    <div class="screen" id="screen-client-dashboard">
-      <div class="screen-content">
-        <div class="dash-header">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-top:4px;">
-            <div>
-              <div class="dash-greeting">Добро пожаловать,</div>
-              <div class="display-title" style="font-size:20px;">Алексей 👋</div>
-            </div>
-            <div class="avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#e8ff47,#a3b71a);" onclick="navigate('screen-my-profile')">АВ</div>
-          </div>
-
-          <div class="search-bar" onclick="showToast('🔍 Поиск в разработке')">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b6b72" stroke-width="1.5"/><path d="M11 11L14 14" stroke="#6b6b72" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span style="font-size:13px;">Поиск монтажёров...</span>
-          </div>
-
-          <div class="filter-chips">
-            <div class="chip active" onclick="filterChip(this)">Все</div>
-            <div class="chip" onclick="filterChip(this)">⭐ Топ</div>
-            <div class="chip" onclick="filterChip(this)">💰 До 10к</div>
-            <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
-            <div class="chip" onclick="filterChip(this)">📱 Reels/Shorts</div>
-            <div class="chip" onclick="filterChip(this)">🎵 Клипы</div>
-          </div>
-        </div>
-
-        <div class="section-title">Монтажёры <span class="badge">24</span></div>
-
-        <!-- Editor cards -->
-        <div class="editor-card fade-up" onclick="navigate('screen-editor-profile', {editor:0})">
-          <div class="editor-card-top">
-            <div class="avatar" style="width:52px;height:52px;font-size:18px;">ДМ</div>
-            <div class="editor-meta">
-              <div class="editor-name">Дмитрий Морозов</div>
-              <div class="editor-title">YouTube & Реклама • Москва</div>
-              <div class="editor-stats">
-                <div class="editor-rating">★ 4.9</div>
-                <div class="editor-reviews">(32 отзыва)</div>
-                <div class="editor-price">от 8 000 ₽</div>
-              </div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-              <div class="status-dot"></div>
-              <span style="font-size:10px;color:var(--muted);">Online</span>
-            </div>
-          </div>
-          <div class="editor-tags">
-            <span class="tag tag-green">YouTube</span>
-            <span class="tag tag-blue">After Effects</span>
-            <span class="tag tag-yellow">4K</span>
-            <span class="tag tag-gray">Реклама</span>
-          </div>
-          <div class="portfolio-strip">
-            <div class="portfolio-thumb">🎬</div>
-            <div class="portfolio-thumb">📹</div>
-            <div class="portfolio-thumb">🎞️</div>
-            <div class="portfolio-thumb" style="font-size:12px;color:var(--muted);">+5</div>
-          </div>
-        </div>
-
-        <div class="editor-card fade-up fade-up-1" onclick="navigate('screen-editor-profile', {editor:1})">
-          <div class="editor-card-top">
-            <div class="avatar" style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#ff6b35,#cc4410);">АС</div>
-            <div class="editor-meta">
-              <div class="editor-name">Анна Соколова</div>
-              <div class="editor-title">Reels, TikTok, Shorts</div>
-              <div class="editor-stats">
-                <div class="editor-rating">★ 4.7</div>
-                <div class="editor-reviews">(18 отзывов)</div>
-                <div class="editor-price">от 3 000 ₽</div>
-              </div>
-            </div>
-          </div>
-          <div class="editor-tags">
-            <span class="tag tag-orange">TikTok</span>
-            <span class="tag tag-orange">Reels</span>
-            <span class="tag tag-blue">Premiere</span>
-          </div>
-        </div>
-
-        <div class="editor-card fade-up fade-up-2" onclick="navigate('screen-editor-profile', {editor:2})">
-          <div class="editor-card-top">
-            <div class="avatar" style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#60a5fa,#2563eb);">КИ</div>
-            <div class="editor-meta">
-              <div class="editor-name">Кирилл Иванов</div>
-              <div class="editor-title">Музыкальные клипы • СПб</div>
-              <div class="editor-stats">
-                <div class="editor-rating">★ 5.0</div>
-                <div class="editor-reviews">(7 отзывов)</div>
-                <div class="editor-price">от 15 000 ₽</div>
-              </div>
-            </div>
-          </div>
-          <div class="editor-tags">
-            <span class="tag tag-blue">Клипы</span>
-            <span class="tag tag-yellow">DaVinci</span>
-            <span class="tag tag-green">Motion</span>
-          </div>
-        </div>
-
-        <div class="editor-card fade-up fade-up-3" onclick="navigate('screen-editor-profile', {editor:3})">
-          <div class="editor-card-top">
-            <div class="avatar" style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#a78bfa,#7c3aed);">МК</div>
-            <div class="editor-meta">
-              <div class="editor-name">Мария Козлова</div>
-              <div class="editor-title">Корпоративное видео</div>
-              <div class="editor-stats">
-                <div class="editor-rating">★ 4.8</div>
-                <div class="editor-reviews">(24 отзыва)</div>
-                <div class="editor-price">от 12 000 ₽</div>
-              </div>
-            </div>
-          </div>
-          <div class="editor-tags">
-            <span class="tag tag-gray">Корп. видео</span>
-            <span class="tag tag-blue">Premiere</span>
-            <span class="tag tag-green">Subтитры</span>
-          </div>
-        </div>
-
-        <div class="scroll-pad"></div>
-      </div>
-    </div>
-
-    <!-- =================== EDITOR DASHBOARD =================== -->
-    <div class="screen" id="screen-editor-dashboard">
-      <div class="screen-content">
-        <div class="dash-header">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-top:4px;">
-            <div>
-              <div class="dash-greeting">Новые заказы,</div>
-              <div class="display-title" style="font-size:20px;">Алексей ✂️</div>
-            </div>
-            <div class="avatar" style="width:40px;height:40px;font-size:14px;" onclick="navigate('screen-my-profile')">АВ</div>
-          </div>
-
-          <div class="search-bar" onclick="showToast('🔍 Поиск в разработке')">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b6b72" stroke-width="1.5"/><path d="M11 11L14 14" stroke="#6b6b72" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span style="font-size:13px;">Поиск заказов...</span>
-          </div>
-
-          <div class="filter-chips">
-            <div class="chip active" onclick="filterChip(this)">Все</div>
-            <div class="chip" onclick="filterChip(this)">📦 Срочные</div>
-            <div class="chip" onclick="filterChip(this)">💰 Высокий бюджет</div>
-            <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
-            <div class="chip" onclick="filterChip(this)">📱 Shorts</div>
-          </div>
-        </div>
-
-        <div class="section-title">Открытые заказы <span class="badge">12</span></div>
-
-        <div class="job-card fade-up" onclick="navigate('screen-job-detail', {job:0})">
-          <div class="job-card-header">
-            <div class="job-title">Монтаж влога с отдыха, 30 мин материала</div>
-            <div class="job-budget">15 000 ₽</div>
-          </div>
-          <div class="job-desc">Нужен монтаж семейного влога с Бали. Есть 30 минут сырого материала, нужно сделать 10-минутное видео для YouTube с музыкой и титрами.</div>
-          <div class="job-footer">
-            <div class="job-meta">
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6b6b72" stroke-width="1.2"/><path d="M6 3v3l2 1.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/></svg>
-                до 15 мая
-              </div>
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9.5C2 8.1 3.3 7 5 7H7C8.7 7 10 8.1 10 9.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="4" r="2" stroke="#6b6b72" stroke-width="1.2"/></svg>
-                3 отклика
-              </div>
-            </div>
-            <div class="tag tag-green" style="font-size:10px;">Открыт</div>
-          </div>
-        </div>
-
-        <div class="job-card fade-up fade-up-1" onclick="navigate('screen-job-detail', {job:1})">
-          <div class="job-card-header">
-            <div class="job-title">Серия Reels для Instagram бренда одежды</div>
-            <div class="job-budget">8 000 ₽</div>
-          </div>
-          <div class="job-desc">Нужно смонтировать 5 Reels по 30 секунд для бренда молодёжной одежды. Исходники предоставим, нужны эффекты и музыка под трендовые звуки.</div>
-          <div class="job-footer">
-            <div class="job-meta">
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6b6b72" stroke-width="1.2"/><path d="M6 3v3l2 1.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/></svg>
-                до 10 мая
-              </div>
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9.5C2 8.1 3.3 7 5 7H7C8.7 7 10 8.1 10 9.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="4" r="2" stroke="#6b6b72" stroke-width="1.2"/></svg>
-                7 откликов
-              </div>
-            </div>
-            <div class="tag tag-orange" style="font-size:10px;">Горячий</div>
-          </div>
-        </div>
-
-        <div class="job-card fade-up fade-up-2" onclick="navigate('screen-job-detail', {job:2})">
-          <div class="job-card-header">
-            <div class="job-title">Монтаж корпоративного промо-ролика</div>
-            <div class="job-budget">35 000 ₽</div>
-          </div>
-          <div class="job-desc">Крупная IT-компания ищет монтажёра для создания 3-минутного имиджевого ролика. Есть раскадровка и все материалы. Нужен профессиональный результат.</div>
-          <div class="job-footer">
-            <div class="job-meta">
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6b6b72" stroke-width="1.2"/><path d="M6 3v3l2 1.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/></svg>
-                до 30 мая
-              </div>
-              <div class="job-meta-item">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9.5C2 8.1 3.3 7 5 7H7C8.7 7 10 8.1 10 9.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="4" r="2" stroke="#6b6b72" stroke-width="1.2"/></svg>
-                1 отклик
-              </div>
-            </div>
-            <div class="tag tag-yellow" style="font-size:10px;">💰 Высокий бюджет</div>
-          </div>
-        </div>
-
-        <div class="job-card fade-up fade-up-3" onclick="navigate('screen-job-detail', {job:3})">
-          <div class="job-card-header">
-            <div class="job-title">Клип для музыкального артиста</div>
-            <div class="job-budget">20 000 ₽</div>
-          </div>
-          <div class="job-desc">Нужен монтаж музыкального клипа ~3 минуты. Материал уже снят. Нужен монтажёр с опытом в музыкальных клипах, чувством ритма.</div>
-          <div class="job-footer">
-            <div class="job-meta">
-              <div class="job-meta-item">📅 до 20 мая</div>
-              <div class="job-meta-item">👤 2 отклика</div>
-            </div>
-            <div class="tag tag-blue" style="font-size:10px;">Клип</div>
-          </div>
-        </div>
-
-        <div class="scroll-pad"></div>
-      </div>
-    </div>
-
-    <!-- =================== CREATE JOB =================== -->
-    <div class="screen" id="screen-create-job">
-      <div class="page-header">
-        <div class="back-btn" onclick="goBackToDash()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <span class="display-title" style="font-size:15px;">Новый заказ</span>
-      </div>
-
-      <div class="create-form">
-        <div class="form-row">
-          <div class="input-group">
-            <label class="input-label">Название заказа *</label>
-            <input class="input" placeholder="Монтаж влога / Reels для бизнеса..." id="job-title">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="input-group">
-            <label class="input-label">Описание *</label>
-            <textarea class="input" rows="4" placeholder="Опишите задачу подробно: что нужно сделать, какой стиль, что предоставите..." id="job-desc"></textarea>
-          </div>
-        </div>
-
-        <div class="form-row-2">
-          <div class="input-group">
-            <label class="input-label">Бюджет (₽) *</label>
-            <input class="input" type="number" placeholder="10000" id="job-budget">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Дедлайн *</label>
-            <input class="input" type="date" id="job-deadline">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="input-group">
-            <label class="input-label">Референсы (ссылки через запятую)</label>
-            <textarea class="input" rows="2" placeholder="https://youtube.com/watch?v=..." id="job-refs"></textarea>
-          </div>
-        </div>
-
-        <div style="background:rgba(232,255,71,0.05); border:1px solid rgba(232,255,71,0.15); border-radius:12px; padding:12px 14px; margin-bottom:20px;">
-          <div style="font-size:12px; color:var(--accent); font-weight:600; margin-bottom:4px;">💡 Совет</div>
-          <div style="font-size:12px; color:var(--muted2); line-height:1.5;">Чем подробнее описание — тем качественнее отклики. Укажите стиль, объём материала и ожидания.</div>
-        </div>
-
-        <button class="btn btn-primary" onclick="submitJob()">Опубликовать заказ 🚀</button>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="goBackToDash()">Отмена</button>
-      </div>
-    </div>
-
-    <!-- =================== JOB DETAIL =================== -->
-    <div class="screen" id="screen-job-detail">
-      <div class="page-header">
-        <div class="back-btn" onclick="goBackToDash()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <span class="display-title" style="font-size:15px;" id="job-detail-header">Детали заказа</span>
-      </div>
-
-      <div class="screen-content">
-        <div class="job-detail-hero" id="job-detail-content">
-          <!-- filled by JS -->
-        </div>
-
-        <!-- For editors: response form -->
-        <div id="editor-response-section" style="padding:20px; display:none;">
-          <div class="display-title" style="font-size:14px; margin-bottom:14px;">Ваш отклик</div>
-          <div class="form-row">
-            <div class="input-group">
-              <label class="input-label">Сообщение заказчику *</label>
-              <textarea class="input" rows="3" placeholder="Расскажите о своём подходе к этому заказу, опыте с похожими проектами..." id="response-message"></textarea>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group">
-              <label class="input-label">Ваша цена (₽) *</label>
-              <input class="input" type="number" placeholder="12000" id="response-price">
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="submitResponse()">Откликнуться</button>
-        </div>
-
-        <!-- For clients: responses list -->
-        <div id="client-responses-section" style="display:none;">
-          <div class="section-title">Отклики <span class="badge" id="resp-count">3</span></div>
-
-          <div class="response-card" onclick="navigate('screen-editor-profile', {editor:0})">
-            <div class="review-header">
-              <div class="avatar" style="width:36px;height:36px;font-size:13px;">ДМ</div>
-              <div style="flex:1;">
-                <div style="font-weight:600;font-size:13px;">Дмитрий Морозов</div>
-                <div style="font-size:11px;color:var(--muted);">★ 4.9 • 32 отзыва</div>
-              </div>
-              <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--accent);">12 000 ₽</div>
-            </div>
-            <div style="font-size:13px;color:var(--muted2);line-height:1.5;margin:8px 0 10px;">
-              Работал с похожими проектами, монтировал влоги для каналов с 100к+ подписчиков. Готов взяться за ваш заказ завтра же.
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectEditorAction()">Выбрать</button>
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openTelegram('dmitry_editor')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
-                Написать
-              </button>
-            </div>
-          </div>
-
-          <div class="response-card" onclick="navigate('screen-editor-profile', {editor:3})">
-            <div class="review-header">
-              <div class="avatar" style="width:36px;height:36px;font-size:13px;background:linear-gradient(135deg,#a78bfa,#7c3aed);">МК</div>
-              <div style="flex:1;">
-                <div style="font-weight:600;font-size:13px;">Мария Козлова</div>
-                <div style="font-size:11px;color:var(--muted);">★ 4.8 • 24 отзыва</div>
-              </div>
-              <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--accent);">14 000 ₽</div>
-            </div>
-            <div style="font-size:13px;color:var(--muted2);line-height:1.5;margin:8px 0 10px;">
-              Специализируюсь на подобном контенте. Могу сделать быстро и качественно, есть похожие примеры в портфолио.
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectEditorAction()">Выбрать</button>
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openTelegram('maria_editor')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
-                Написать
-              </button>
-            </div>
-          </div>
-
-          <div class="response-card">
-            <div class="review-header">
-              <div class="avatar" style="width:36px;height:36px;font-size:13px;background:linear-gradient(135deg,#ff6b35,#cc4410);">АС</div>
-              <div style="flex:1;">
-                <div style="font-weight:600;font-size:13px;">Анна Соколова</div>
-                <div style="font-size:11px;color:var(--muted);">★ 4.7 • 18 отзывов</div>
-              </div>
-              <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--accent);">9 000 ₽</div>
-            </div>
-            <div style="font-size:13px;color:var(--muted2);line-height:1.5;margin:8px 0 10px;">
-              Люблю работать с таким материалом. Сделаю динамично и с атмосферой, как в ваших референсах!
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectEditorAction()">Выбрать</button>
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openTelegram('anna_editor')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
-                Написать
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="scroll-pad"></div>
-      </div>
-    </div>
-
-    <!-- =================== EDITOR PROFILE =================== -->
-    <div class="screen" id="screen-editor-profile">
-      <div class="page-header">
-        <div class="back-btn" onclick="goBackToDash()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <span class="display-title" style="font-size:15px;">Профиль</span>
-      </div>
-
-      <div class="screen-content" id="editor-profile-content">
-        <!-- filled by JS -->
-      </div>
-    </div>
-
-    <!-- =================== MY PROFILE =================== -->
-    <div class="screen" id="screen-my-profile">
-      <div class="page-header">
-        <div class="back-btn" onclick="goBackToDash()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <span class="display-title" style="font-size:15px;">Мой профиль</span>
-      </div>
-
-      <div class="screen-content" id="my-profile-content">
-        <!-- filled by JS -->
-      </div>
-    </div>
-
-    <!-- =================== MY JOBS (client) =================== -->
-    <div class="screen" id="screen-my-jobs">
-      <div class="screen-content">
-        <div class="dash-header" style="padding-bottom:12px;">
-          <div class="display-title" style="font-size:20px; padding-top:4px;">Мои заказы</div>
-        </div>
-
-        <div class="section-title">Активные <span class="badge">2</span></div>
-
-        <div class="job-card" onclick="navigate('screen-job-detail', {job:0, isClient:true})">
-          <div class="job-card-header">
-            <div class="job-title">Монтаж влога с Бали</div>
-            <div class="tag tag-green">Открыт</div>
-          </div>
-          <div class="job-footer" style="margin-top:8px;">
-            <div class="job-meta">
-              <div class="job-meta-item">💰 15 000 ₽</div>
-              <div class="job-meta-item">👁 3 отклика</div>
-            </div>
-            <div style="font-size:11px;color:var(--muted);">3 дня назад</div>
-          </div>
-        </div>
-
-        <div class="job-card" onclick="navigate('screen-job-detail', {job:1, isClient:true})">
-          <div class="job-card-header">
-            <div class="job-title">Reels для Instagram</div>
-            <div class="tag tag-blue">В работе</div>
-          </div>
-          <div class="job-footer" style="margin-top:8px;">
-            <div class="job-meta">
-              <div class="job-meta-item">💰 8 000 ₽</div>
-              <div class="job-meta-item">✂️ Анна С.</div>
-            </div>
-            <div style="font-size:11px;color:var(--muted);">5 дней назад</div>
-          </div>
-        </div>
-
-        <div class="section-title" style="margin-top:4px;">Завершённые</div>
-
-        <div class="job-card" style="opacity:0.6;">
-          <div class="job-card-header">
-            <div class="job-title">Видео для презентации</div>
-            <div class="tag tag-gray">Завершён</div>
-          </div>
-          <div class="job-footer" style="margin-top:8px;">
-            <div class="job-meta">
-              <div class="job-meta-item">💰 25 000 ₽</div>
-              <div class="job-meta-item">⭐ 5.0</div>
-            </div>
-            <div style="font-size:11px;color:var(--muted);">2 нед. назад</div>
-          </div>
-        </div>
-
-        <div class="scroll-pad"></div>
-      </div>
-    </div>
-
-    <!-- =================== MY RESPONSES (editor) =================== -->
-    <div class="screen" id="screen-my-responses">
-      <div class="screen-content">
-        <div class="dash-header" style="padding-bottom:12px;">
-          <div class="display-title" style="font-size:20px; padding-top:4px;">Мои отклики</div>
-        </div>
-
-        <div class="section-title">Ожидание ответа <span class="badge">2</span></div>
-
-        <div class="job-card">
-          <div class="job-card-header">
-            <div class="job-title">Монтаж влога с Бали</div>
-            <div class="tag tag-yellow">⏳ Ждём</div>
-          </div>
-          <div style="font-size:12px;color:var(--muted2);margin:6px 0 10px;line-height:1.5;">
-            Ваша цена: <b style="color:var(--text);">12 000 ₽</b>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="openTelegram('client123')">Написать заказчику</button>
-        </div>
-
-        <div class="job-card">
-          <div class="job-card-header">
-            <div class="job-title">Клип для артиста</div>
-            <div class="tag tag-yellow">⏳ Ждём</div>
-          </div>
-          <div style="font-size:12px;color:var(--muted2);margin:6px 0 10px;">
-            Ваша цена: <b style="color:var(--text);">18 000 ₽</b>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="openTelegram('music_client')">Написать заказчику</button>
-        </div>
-
-        <div class="section-title" style="margin-top:4px;">Принятые</div>
-        <div class="job-card" style="border-color:rgba(74,222,128,0.2);">
-          <div class="job-card-header">
-            <div class="job-title">Корпоративное промо</div>
-            <div class="tag tag-green">✅ Принят</div>
-          </div>
-          <div style="font-size:12px;color:var(--muted2);margin:6px 0 10px;">
-            Ваша цена: <b style="color:var(--text);">30 000 ₽</b>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="openTelegram('corp_client')">Перейти в чат</button>
-        </div>
-
-        <div class="scroll-pad"></div>
-      </div>
-    </div>
-
-  </div><!-- /app -->
-
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav hidden" id="bottom-nav">
-    <div class="nav-item active" id="nav-home" onclick="navTo('home')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      <span class="nav-label">Главная</span>
-    </div>
-    <div class="nav-item" id="nav-list" onclick="navTo('list')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      <span class="nav-label" id="nav-list-label">Заказы</span>
-    </div>
-    <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span class="nav-label">Профиль</span>
-    </div>
-  </nav>
-
-  <!-- FAB (Create job for client) -->
-  <div class="fab hidden" id="fab" onclick="navigate('screen-create-job')">
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M11 4v14M4 11h14" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>
   </div>
 
-</div><!-- /phone-shell -->
+  <!-- =================== EDITOR DASHBOARD =================== -->
+  <div class="screen" id="screen-editor-dashboard">
+    <div class="screen-content">
+      <div class="dash-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:4px;">
+          <div>
+            <div class="dash-greeting">Новые заказы,</div>
+            <div class="display-title" style="font-size:20px;" id="editor-greeting">... ✂️</div>
+          </div>
+          <div class="avatar" style="width:40px;height:40px;font-size:14px;" id="editor-avatar" onclick="navigate('screen-my-profile')">?</div>
+        </div>
+
+        <div class="search-bar" onclick="showToast('🔍 Поиск в разработке')">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b6b72" stroke-width="1.5"/><path d="M11 11L14 14" stroke="#6b6b72" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="font-size:13px;">Поиск заказов...</span>
+        </div>
+
+        <div class="filter-chips">
+          <div class="chip active" onclick="filterChip(this)">Все</div>
+          <div class="chip" onclick="filterChip(this)">📦 Срочные</div>
+          <div class="chip" onclick="filterChip(this)">💰 Высокий бюджет</div>
+          <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
+        </div>
+      </div>
+
+      <div class="section-title">Открытые заказы</div>
+      <div id="jobs-list">
+        <div class="loader"><div class="spinner"></div> Загрузка...</div>
+      </div>
+      <div class="scroll-pad"></div>
+    </div>
+  </div>
+
+  <!-- =================== CREATE JOB =================== -->
+  <div class="screen" id="screen-create-job">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Новый заказ</span>
+    </div>
+
+    <div class="create-form">
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Название заказа *</label>
+          <input class="input" placeholder="Монтаж влога / Reels для бизнеса..." id="job-title">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Описание *</label>
+          <textarea class="input" rows="4" placeholder="Опишите задачу подробно: что нужно сделать, какой стиль, что предоставите..." id="job-desc"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="input-group">
+          <label class="input-label">Бюджет (₽) *</label>
+          <input class="input" type="number" placeholder="10000" id="job-budget">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Дедлайн *</label>
+          <input class="input" type="date" id="job-deadline">
+        </div>
+      </div>
+
+      <div style="background:rgba(232,255,71,0.05);border:1px solid rgba(232,255,71,0.15);border-radius:12px;padding:12px 14px;margin-bottom:20px;">
+        <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px;">💡 Совет</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Чем подробнее описание — тем качественнее отклики.</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitJob()" id="create-job-btn">Опубликовать заказ 🚀</button>
+      <button class="btn btn-secondary" style="margin-top:10px;" onclick="goBackToDash()">Отмена</button>
+    </div>
+  </div>
+
+  <!-- =================== JOB DETAIL =================== -->
+  <div class="screen" id="screen-job-detail">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;" id="job-detail-header">Детали заказа</span>
+    </div>
+
+    <div class="screen-content">
+      <div class="job-detail-hero" id="job-detail-content"></div>
+
+      <!-- For editors: response form -->
+      <div id="editor-response-section" style="padding:20px;display:none;">
+        <div class="display-title" style="font-size:14px;margin-bottom:14px;">Ваш отклик</div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Сообщение заказчику *</label>
+            <textarea class="input" rows="3" placeholder="Расскажите почему вы подходите для этого заказа..." id="response-message"></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Ваша цена (₽) *</label>
+            <input class="input" type="number" placeholder="12000" id="response-price">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="submitResponse()" id="response-btn">Отправить отклик</button>
+      </div>
+
+      <!-- For clients: proposals list -->
+      <div id="client-responses-section" style="display:none;">
+        <div style="padding:16px 20px 8px;">
+          <div class="display-title" style="font-size:14px;">Отклики монтажёров</div>
+        </div>
+        <div id="proposals-list">
+          <div class="loader"><div class="spinner"></div> Загрузка...</div>
+        </div>
+      </div>
+
+      <div class="scroll-pad"></div>
+    </div>
+  </div>
+
+  <!-- =================== EDITOR PROFILE (monter detail for client) =================== -->
+  <div class="screen" id="screen-editor-profile">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Профиль</span>
+    </div>
+    <div class="screen-content" id="editor-profile-content"></div>
+  </div>
+
+  <!-- =================== MY PROFILE =================== -->
+  <div class="screen" id="screen-my-profile">
+    <div class="page-header">
+      <div class="back-btn" onclick="goBackToDash()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Мой профиль</span>
+    </div>
+    <div class="screen-content" id="my-profile-content"></div>
+  </div>
+
+  <!-- =================== MY JOBS (client) =================== -->
+  <div class="screen" id="screen-my-jobs">
+    <div class="screen-content">
+      <div class="dash-header" style="padding-bottom:12px;">
+        <div class="display-title" style="font-size:20px;padding-top:4px;">Мои заказы</div>
+      </div>
+      <div id="my-jobs-list">
+        <div class="loader"><div class="spinner"></div> Загрузка...</div>
+      </div>
+      <div class="scroll-pad"></div>
+    </div>
+  </div>
+
+  <!-- =================== MY RESPONSES (editor) =================== -->
+  <div class="screen" id="screen-my-responses">
+    <div class="screen-content">
+      <div class="dash-header" style="padding-bottom:12px;">
+        <div class="display-title" style="font-size:20px;padding-top:4px;">Мои отклики</div>
+      </div>
+      <div id="my-responses-list">
+        <div class="loader"><div class="spinner"></div> Загрузка...</div>
+      </div>
+      <div class="scroll-pad"></div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav hidden" id="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="navTo('home')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span class="nav-label">Главная</span>
+  </div>
+  <div class="nav-item" id="nav-list" onclick="navTo('list')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span class="nav-label" id="nav-list-label">Заказы</span>
+  </div>
+  <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-label">Профиль</span>
+  </div>
+</nav>
+
+<!-- FAB -->
+<div class="fab hidden" id="fab" onclick="navigate('screen-create-job')">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M11 4v14M4 11h14" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -1308,58 +911,756 @@
 </div>
 
 <script>
-// ============ STATE ============
-const state = {
-  role: null, // 'client' | 'editor'
-  currentScreen: 'screen-onboarding',
-  prevScreen: null,
-  currentJob: 0,
-  isClientView: false,
+// ============ CONFIG ============
+const SUPABASE_URL = 'https://lhsovmvbcyyxwhdxdxuf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxoc292bXZiY3l5eHdoZHhkeHVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNDYsImV4cCI6MjA5MjcxODE0Nn0.-Qo-cX1gqoYG12J64hgkUjYMgczUWFjeddjfsnVgzbs';
+
+// ============ SUPABASE CLIENT ============
+const sb = {
+  async query(path, opts = {}) {
+    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': opts.prefer || 'return=representation',
+        ...opts.headers
+      },
+      method: opts.method || 'GET',
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  },
+
+  async select(table, params = '') {
+    return this.query(`${table}?${params}`);
+  },
+
+  async insert(table, data) {
+    return this.query(table, { method: 'POST', body: data });
+  },
+
+  async update(table, data, match) {
+    return this.query(`${table}?${match}`, { method: 'PATCH', body: data });
+  },
+
+  async upsert(table, data, onConflict) {
+    return this.query(table, {
+      method: 'POST',
+      body: data,
+      prefer: `resolution=merge-duplicates,return=representation`,
+      headers: onConflict ? { 'Prefer': `resolution=merge-duplicates,return=representation` } : {}
+    });
+  }
 };
 
-const editors = [
-  { id:0, name:'Дмитрий Морозов', handle:'@dmitry_editor', initials:'ДМ', title:'YouTube & Реклама', city:'Москва', rating:4.9, reviews:32, priceFrom:8000, priceTo:35000, bio:'Монтирую видео для YouTube и рекламы уже 6 лет. Работал с каналами 100к–2М подписчиков. Специализируюсь на влогах, обзорах, продуктовых видео. Знаю, что цепляет аудиторию.', tags:['YouTube','After Effects','4K','Реклама','Motion'], color:'linear-gradient(135deg,#e8ff47,#a3b71a)', reviewList:[{author:'Максим К.',rating:5,text:'Отличная работа, быстро и качественно! Уже третий раз заказываю.'},{author:'Оля Р.',rating:5,text:'Дмитрий — профессионал своего дела. Сделал всё в срок, клиент доволен.'},{author:'Артём В.',rating:4,text:'Хорошая работа, небольшие правки были, но сделал оперативно.'}] },
-  { id:1, name:'Анна Соколова', handle:'@anna_editor', initials:'АС', title:'Reels, TikTok, Shorts', city:'Санкт-Петербург', rating:4.7, reviews:18, priceFrom:3000, priceTo:15000, bio:'Создаю вирусный короткий контент для социальных сетей. Всегда слежу за трендами, знаю что "залетает". Работаю быстро — обычно 1-2 дня.', tags:['TikTok','Reels','Shorts','Premiere','Тренды'], color:'linear-gradient(135deg,#ff6b35,#cc4410)', reviewList:[{author:'Бренд ZARA.ru',rating:5,text:'Сделала 10 рилсов для нашего бренда — все показали хороший охват!'},{author:'Настя М.',rating:4,text:'Быстро, стильно. Буду обращаться ещё.'}] },
-  { id:2, name:'Кирилл Иванов', handle:'@kirill_clips', initials:'КИ', title:'Музыкальные клипы', city:'Санкт-Петербург', rating:5.0, reviews:7, priceFrom:15000, priceTo:60000, bio:'Специализируюсь на музыкальных клипах и арт-видео. Имею опыт работы с артистами, вышедшими в топ чартов. Чувствую музыку и ритм, каждая склейка — это событие.', tags:['Клипы','DaVinci','Motion Design','Цветокор','Арт'], color:'linear-gradient(135deg,#60a5fa,#2563eb)', reviewList:[{author:'МС Волга',rating:5,text:'Лучший монтажёр с которым работал. Клип собрал 1М просмотров!'},{author:'Группа "Закат"',rating:5,text:'Превзошёл ожидания. Рекомендуем всем музыкантам.'}] },
-  { id:3, name:'Мария Козлова', handle:'@maria_video', initials:'МК', title:'Корпоративное видео', city:'Москва', rating:4.8, reviews:24, priceFrom:12000, priceTo:80000, bio:'10+ лет в видеопроизводстве. Корпоративные ролики, имиджевые видео, обучающий контент. Работала с Sberbank, Яндекс, РЖД. Всегда соблюдаю дедлайны.', tags:['Корп. видео','Premiere','Субтитры','Озвучка','Анимация'], color:'linear-gradient(135deg,#a78bfa,#7c3aed)', reviewList:[{author:'Sber Digital',rating:5,text:'Профессионал высокого уровня. Всегда в срок, отличное качество.'},{author:'Яндекс',rating:5,text:'Мария сделала серию обучающих видео для наших сотрудников. Всё на высшем уровне.'},{author:'РЖД',rating:4,text:'Хорошая работа, были небольшие правки.'}] },
-];
+// ============ STATE ============
+const state = {
+  role: null,
+  currentScreen: 'screen-loading',
+  prevScreen: null,
+  currentOrderId: null,
+  currentMonter: null,
+  user: null,
+  tgUser: null,
+};
 
-const jobs = [
-  { id:0, title:'Монтаж влога с отдыха, 30 мин материала', desc:'Нужен монтаж семейного влога с Бали. Есть 30 минут сырого материала, нужно сделать 10-минутное видео для YouTube с музыкой, цветокоррекцией и титрами. Референсы: каналы типа "Бекство из Питера" и "Влог Семьи".', budget:15000, deadline:'15 мая 2025', client:'Максим К.', clientHandle:'@maxim_kz', refs:['https://youtube.com/example1'] },
-  { id:1, title:'Серия Reels для Instagram бренда одежды', desc:'Нужно смонтировать 5 Reels по 30 секунд для бренда молодёжной одежды. Исходники предоставим (съёмки лукбука). Нужны эффекты, переходы и трендовые звуки. Примеры стиля прикреплены.', budget:8000, deadline:'10 мая 2025', client:'MODO Brand', clientHandle:'@modo_brand', refs:[] },
-  { id:2, title:'Монтаж корпоративного промо-ролика', desc:'Крупная IT-компания ищет монтажёра для создания 3-минутного имиджевого ролика. Есть раскадровка и все материалы (интервью, b-roll, инфографика). Нужен профессиональный уровень с анимированными вставками.', budget:35000, deadline:'30 мая 2025', client:'TechCorp', clientHandle:'@techcorp_hr', refs:['https://vimeo.com/example'] },
-  { id:3, title:'Клип для музыкального артиста', desc:'Нужен монтаж музыкального клипа ~3 минуты. Материал уже снят режиссёром. Нужен монтажёр с опытом в музыкальных клипах, чувством ритма, умением работать с цветом. Жанр: indie pop.', budget:20000, deadline:'20 мая 2025', client:'Артём Звук', clientHandle:'@artem_sound', refs:[] },
-];
+// ============ TELEGRAM INIT ============
+async function initApp() {
+  // Init Telegram WebApp
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  // Get user from Telegram
+  const initData = tg?.initDataUnsafe;
+  const tgUserRaw = initData?.user;
+
+  if (tgUserRaw) {
+    state.tgUser = tgUserRaw;
+  } else {
+    // Fallback for testing outside Telegram
+    state.tgUser = {
+      id: Math.floor(Math.random() * 9000000) + 1000000,
+      first_name: 'Тест',
+      username: 'test_user_' + Date.now()
+    };
+  }
+
+  try {
+    await loadOrCreateUser();
+  } catch (e) {
+    console.error('Init error:', e);
+    showToast('❌ Ошибка подключения');
+    showScreen('screen-onboarding');
+  }
+}
+
+// ============ USER MANAGEMENT ============
+async function loadOrCreateUser() {
+  const telegramId = String(state.tgUser.id);
+
+  // Check if user exists
+  const users = await sb.select('users', `telegram_id=eq.${telegramId}&limit=1`);
+
+  if (users && users.length > 0) {
+    state.user = users[0];
+    state.role = state.user.role;
+
+    if (state.role) {
+      // User has a role — go straight to dashboard
+      await enterDashboard();
+    } else {
+      // User exists but no role set yet
+      showScreen('screen-onboarding');
+    }
+  } else {
+    // New user — create record
+    const newUser = await sb.insert('users', {
+      telegram_id: telegramId,
+      username: state.tgUser.username || state.tgUser.first_name || 'user',
+      role: null
+    });
+    state.user = Array.isArray(newUser) ? newUser[0] : newUser;
+    showScreen('screen-onboarding');
+  }
+}
+
+async function enterDashboard() {
+  updateHeaderUI();
+  const dash = state.role === 'client' ? 'screen-client-dashboard' : 'screen-editor-dashboard';
+  showScreen(dash);
+  if (state.role === 'client') {
+    await loadMonters();
+  } else {
+    await loadOrders();
+  }
+}
+
+function updateHeaderUI() {
+  if (!state.user) return;
+  const name = state.user.username || state.tgUser?.first_name || 'Пользователь';
+  const initials = name.slice(0, 2).toUpperCase();
+
+  const clientGreet = document.getElementById('client-greeting');
+  const editorGreet = document.getElementById('editor-greeting');
+  const clientAva = document.getElementById('client-avatar');
+  const editorAva = document.getElementById('editor-avatar');
+
+  if (clientGreet) clientGreet.textContent = name + ' 👋';
+  if (editorGreet) editorGreet.textContent = name + ' ✂️';
+  if (clientAva) clientAva.textContent = initials;
+  if (editorAva) editorAva.textContent = initials;
+
+  // Set nav label
+  const navListLabel = document.getElementById('nav-list-label');
+  if (navListLabel) navListLabel.textContent = state.role === 'client' ? 'Заказы' : 'Отклики';
+}
+
+// ============ LOAD MONTERS (for client dashboard) ============
+async function loadMonters() {
+  const container = document.getElementById('editors-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+
+  try {
+    // Load all montagers (users with role = monter)
+    const monters = await sb.select('users', `role=eq.monter&order=created_at.desc`);
+
+    if (!monters || monters.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">✂️</div>
+          <div class="empty-state-title">Монтажёров пока нет</div>
+          <div class="empty-state-desc">Скоро здесь появятся профессиональные монтажёры</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = monters.map((m, i) => renderMonterCard(m, i)).join('');
+  } catch (e) {
+    console.error('loadMonters error:', e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+function renderMonterCard(user, idx) {
+  const name = user.username || 'Монтажёр';
+  const initials = name.slice(0, 2).toUpperCase();
+  const colors = [
+    'linear-gradient(135deg,#e8ff47,#a3b71a)',
+    'linear-gradient(135deg,#ff6b35,#cc4410)',
+    'linear-gradient(135deg,#60a5fa,#2563eb)',
+    'linear-gradient(135deg,#a78bfa,#7c3aed)',
+    'linear-gradient(135deg,#4ade80,#16a34a)',
+  ];
+  const color = colors[idx % colors.length];
+
+  return `
+    <div class="editor-card fade-up" style="animation-delay:${idx * 0.05}s" onclick="viewMonterProfile('${user.id}')">
+      <div class="editor-card-top">
+        <div class="avatar" style="width:52px;height:52px;font-size:18px;background:${color};">${initials}</div>
+        <div class="editor-meta">
+          <div class="editor-name">${name}</div>
+          <div class="editor-title">Монтажёр • Telegram</div>
+          <div class="editor-stats">
+            <div class="editor-price">Открыт к заказам</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div class="status-dot"></div>
+          <span style="font-size:10px;color:var(--muted);">Active</span>
+        </div>
+      </div>
+      <div class="editor-tags" style="margin-top:10px;">
+        <span class="tag tag-green">Монтаж</span>
+        <span class="tag tag-blue">Видео</span>
+      </div>
+    </div>`;
+}
+
+function viewMonterProfile(userId) {
+  const monter = state._montersCache?.find(m => m.id === userId);
+  if (monter) {
+    renderMonterProfileById(monter);
+  } else {
+    // Load from DB
+    sb.select('users', `id=eq.${userId}&limit=1`).then(([m]) => {
+      if (m) renderMonterProfileById(m);
+    });
+  }
+  navigate('screen-editor-profile');
+}
+
+function renderMonterProfileById(user) {
+  const name = user.username || 'Монтажёр';
+  const initials = name.slice(0, 2).toUpperCase();
+  document.getElementById('editor-profile-content').innerHTML = `
+    <div class="profile-hero">
+      <div class="profile-avatar">${initials}</div>
+      <div class="profile-name">${name}</div>
+      <div class="profile-handle">@${user.username || 'user'} • Монтажёр</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+        <span class="tag tag-green">Монтаж</span>
+        <span class="tag tag-blue">Видео</span>
+      </div>
+    </div>
+
+    <div style="padding:16px 20px 100px;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--muted2);margin-bottom:2px;">Профессиональный монтажёр</div>
+        <div style="font-size:13px;color:var(--muted2);">Зарегистрирован: ${new Date(user.created_at).toLocaleDateString('ru-RU')}</div>
+      </div>
+      <button class="connect-btn" onclick="openTelegramUser('${user.username || ''}')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
+        Написать в Telegram
+      </button>
+    </div>`;
+}
+
+// ============ LOAD ORDERS (for editor dashboard) ============
+async function loadOrders() {
+  const container = document.getElementById('jobs-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+
+  try {
+    const orders = await sb.select('orders', `status=eq.open&order=created_at.desc`);
+
+    if (!orders || orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-title">Заказов пока нет</div>
+          <div class="empty-state-desc">Скоро здесь появятся новые заказы от клиентов</div>
+        </div>`;
+      return;
+    }
+
+    // Load proposal counts per order
+    const orderIds = orders.map(o => o.id);
+    let proposalCounts = {};
+    try {
+      const proposals = await sb.select('proposals', `order_id=in.(${orderIds.join(',')})&select=order_id`);
+      if (proposals) {
+        proposals.forEach(p => {
+          proposalCounts[p.order_id] = (proposalCounts[p.order_id] || 0) + 1;
+        });
+      }
+    } catch(e) {}
+
+    container.innerHTML = orders.map((order, i) => renderOrderCard(order, proposalCounts[order.id] || 0, i)).join('');
+  } catch (e) {
+    console.error('loadOrders error:', e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+function renderOrderCard(order, proposalCount, idx) {
+  const date = order.created_at ? new Date(order.created_at).toLocaleDateString('ru-RU') : '';
+  const statusTag = getStatusTag(order.status);
+  const budget = order.price ? `${Number(order.price).toLocaleString('ru-RU')} ₽` : 'Не указан';
+
+  return `
+    <div class="job-card fade-up" style="animation-delay:${idx * 0.05}s" onclick="openJobDetail('${order.id}')">
+      <div class="job-card-header">
+        <div class="job-title">${escHtml(order.title)}</div>
+        <div class="job-budget">${budget}</div>
+      </div>
+      <div class="job-desc">${escHtml(order.description || '')}</div>
+      <div class="job-footer">
+        <div class="job-meta">
+          <div class="job-meta-item">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6b6b72" stroke-width="1.2"/><path d="M6 3v3l2 1.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/></svg>
+            ${date}
+          </div>
+          <div class="job-meta-item">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9.5C2 8.1 3.3 7 5 7H7C8.7 7 10 8.1 10 9.5" stroke="#6b6b72" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="4" r="2" stroke="#6b6b72" stroke-width="1.2"/></svg>
+            ${proposalCount} ${declension(proposalCount, ['отклик', 'отклика', 'откликов'])}
+          </div>
+        </div>
+        ${statusTag}
+      </div>
+    </div>`;
+}
+
+// ============ OPEN JOB DETAIL ============
+async function openJobDetail(orderId) {
+  state.currentOrderId = orderId;
+  document.getElementById('job-detail-content').innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+  document.getElementById('editor-response-section').style.display = 'none';
+  document.getElementById('client-responses-section').style.display = 'none';
+
+  navigate('screen-job-detail');
+
+  try {
+    const orders = await sb.select('orders', `id=eq.${orderId}&limit=1`);
+    const order = orders?.[0];
+    if (!order) { showToast('❌ Заказ не найден'); return; }
+
+    // Get client info
+    let clientName = 'Заказчик';
+    let clientUsername = '';
+    try {
+      const clients = await sb.select('users', `id=eq.${order.client_id}&limit=1`);
+      if (clients?.[0]) {
+        clientName = clients[0].username || 'Заказчик';
+        clientUsername = clients[0].username || '';
+      }
+    } catch(e) {}
+
+    const titleShort = order.title.length > 22 ? order.title.slice(0, 22) + '…' : order.title;
+    document.getElementById('job-detail-header').textContent = titleShort;
+
+    const budget = order.price ? `${Number(order.price).toLocaleString('ru-RU')} ₽` : 'Не указан';
+    const isClientRole = state.role === 'client';
+    const isMyOrder = state.user && order.client_id === state.user.id;
+
+    document.getElementById('job-detail-content').innerHTML = `
+      <div style="margin-bottom:8px;">
+        <div class="tag tag-green" style="margin-bottom:12px;">${getStatusLabel(order.status)}</div>
+        <h2 class="display-title" style="font-size:18px;line-height:1.25;margin-bottom:12px;">${escHtml(order.title)}</h2>
+        <p style="font-size:14px;color:var(--muted2);line-height:1.65;">${escHtml(order.description || '')}</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Бюджет</div>
+          <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent);">${budget}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Статус</div>
+          <div style="font-size:13px;font-weight:600;">${getStatusLabel(order.status)}</div>
+        </div>
+      </div>
+
+      <div class="client-row">
+        <div class="avatar" style="width:36px;height:36px;font-size:12px;background:var(--bg3);">${clientName.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;">${escHtml(clientName)}</div>
+          <div style="font-size:11px;color:var(--muted);">Заказчик</div>
+        </div>
+        ${!isClientRole && clientUsername ? `<button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="openTelegramUser('${clientUsername}')">Написать</button>` : ''}
+      </div>`;
+
+    // Show appropriate section
+    if (isClientRole || isMyOrder) {
+      document.getElementById('client-responses-section').style.display = 'block';
+      await loadProposals(orderId);
+    } else {
+      // Check if monter already submitted a proposal
+      const myProposals = await sb.select('proposals', `order_id=eq.${orderId}&monter_id=eq.${state.user.id}&limit=1`);
+      if (myProposals && myProposals.length > 0) {
+        document.getElementById('editor-response-section').innerHTML = `
+          <div style="padding:20px;">
+            <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px;text-align:center;">
+              <div style="font-size:20px;margin-bottom:8px;">✅</div>
+              <div style="font-weight:600;color:#4ade80;margin-bottom:4px;">Отклик отправлен</div>
+              <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${Number(myProposals[0].price).toLocaleString('ru-RU')} ₽</div>
+            </div>
+          </div>`;
+        document.getElementById('editor-response-section').style.display = 'block';
+      } else {
+        document.getElementById('editor-response-section').style.display = 'block';
+      }
+    }
+
+  } catch (e) {
+    console.error('openJobDetail error:', e);
+    document.getElementById('job-detail-content').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+// ============ LOAD PROPOSALS ============
+async function loadProposals(orderId) {
+  const container = document.getElementById('proposals-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка откликов...</div>';
+
+  try {
+    const proposals = await sb.select('proposals', `order_id=eq.${orderId}&order=created_at.asc`);
+
+    if (!proposals || proposals.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Откликов пока нет</div><div class="empty-state-desc">Монтажёры ещё не откликнулись на ваш заказ</div></div>';
+      return;
+    }
+
+    // Get monter names
+    const monterIds = [...new Set(proposals.map(p => p.monter_id))];
+    let monters = {};
+    try {
+      const users = await sb.select('users', `id=in.(${monterIds.join(',')})&select=id,username`);
+      if (users) users.forEach(u => monters[u.id] = u);
+    } catch(e) {}
+
+    container.innerHTML = proposals.map(p => {
+      const m = monters[p.monter_id] || {};
+      const name = m.username || 'Монтажёр';
+      const initials = name.slice(0, 2).toUpperCase();
+      const price = p.price ? `${Number(p.price).toLocaleString('ru-RU')} ₽` : 'Не указана';
+      const statusTag = p.status === 'accepted' ? '<span class="tag tag-green">✅ Принят</span>' :
+                        p.status === 'rejected' ? '<span class="tag tag-gray">Отклонён</span>' :
+                        '<span class="tag tag-yellow">⏳ Ждёт</span>';
+      return `
+        <div class="response-card">
+          <div class="review-header">
+            <div class="avatar" style="width:36px;height:36px;font-size:13px;background:var(--bg3);">${initials}</div>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:13px;">${escHtml(name)}</div>
+              ${statusTag}
+            </div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--accent);">${price}</div>
+          </div>
+          ${p.comment ? `<div style="font-size:13px;color:var(--muted2);line-height:1.5;margin:8px 0 10px;">${escHtml(p.comment)}</div>` : ''}
+          <div style="display:flex;gap:8px;">
+            ${p.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="acceptProposal('${p.id}','${orderId}')">Выбрать</button>` : ''}
+            ${m.username ? `<button class="btn btn-secondary btn-sm" onclick="openTelegramUser('${m.username}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
+              Написать
+            </button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadProposals error:', e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+// ============ ACCEPT PROPOSAL ============
+async function acceptProposal(proposalId, orderId) {
+  try {
+    await sb.update('proposals', { status: 'accepted' }, `id=eq.${proposalId}`);
+    await sb.update('orders', { status: 'in_progress' }, `id=eq.${orderId}`);
+    showToast('✅ Монтажёр выбран!', 'success');
+    await loadProposals(orderId);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Ошибка. Попробуйте снова.');
+  }
+}
+
+// ============ LOAD MY JOBS (client) ============
+async function loadMyJobs() {
+  const container = document.getElementById('my-jobs-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+
+  try {
+    const orders = await sb.select('orders', `client_id=eq.${state.user.id}&order=created_at.desc`);
+
+    if (!orders || orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-title">Заказов пока нет</div>
+          <div class="empty-state-desc">Создайте первый заказ, нажав кнопку + внизу экрана</div>
+        </div>`;
+      return;
+    }
+
+    const active = orders.filter(o => o.status !== 'done');
+    const done = orders.filter(o => o.status === 'done');
+
+    let html = '';
+    if (active.length) {
+      html += `<div class="section-title">Активные <span class="badge">${active.length}</span></div>`;
+      html += active.map((o, i) => renderMyOrderCard(o, i)).join('');
+    }
+    if (done.length) {
+      html += `<div class="section-title" style="margin-top:4px;">Завершённые</div>`;
+      html += done.map((o, i) => renderMyOrderCard(o, i, true)).join('');
+    }
+    container.innerHTML = html;
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+function renderMyOrderCard(order, idx, faded = false) {
+  const budget = order.price ? `💰 ${Number(order.price).toLocaleString('ru-RU')} ₽` : '';
+  const date = new Date(order.created_at).toLocaleDateString('ru-RU');
+  const statusTag = getStatusTag(order.status);
+  return `
+    <div class="job-card" style="${faded ? 'opacity:0.6;' : ''}" onclick="openJobDetail('${order.id}')">
+      <div class="job-card-header">
+        <div class="job-title">${escHtml(order.title)}</div>
+        ${statusTag}
+      </div>
+      <div class="job-footer" style="margin-top:8px;">
+        <div class="job-meta">
+          ${budget ? `<div class="job-meta-item">${budget}</div>` : ''}
+          <div class="job-meta-item">${date}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ============ LOAD MY RESPONSES (monter) ============
+async function loadMyResponses() {
+  const container = document.getElementById('my-responses-list');
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+
+  try {
+    const proposals = await sb.select('proposals', `monter_id=eq.${state.user.id}&order=created_at.desc`);
+
+    if (!proposals || proposals.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📨</div>
+          <div class="empty-state-title">Откликов пока нет</div>
+          <div class="empty-state-desc">Откликайтесь на заказы, чтобы получать работу</div>
+        </div>`;
+      return;
+    }
+
+    // Load order titles
+    const orderIds = [...new Set(proposals.map(p => p.order_id))];
+    let orderMap = {};
+    try {
+      const orders = await sb.select('orders', `id=in.(${orderIds.join(',')})&select=id,title,client_id`);
+      if (orders) orders.forEach(o => orderMap[o.id] = o);
+    } catch(e) {}
+
+    // Load client usernames for messaging
+    const clientIds = [...new Set(Object.values(orderMap).map(o => o.client_id).filter(Boolean))];
+    let clientMap = {};
+    try {
+      if (clientIds.length) {
+        const clients = await sb.select('users', `id=in.(${clientIds.join(',')})&select=id,username`);
+        if (clients) clients.forEach(c => clientMap[c.id] = c);
+      }
+    } catch(e) {}
+
+    const pending = proposals.filter(p => p.status === 'pending');
+    const accepted = proposals.filter(p => p.status === 'accepted');
+    const rejected = proposals.filter(p => p.status === 'rejected');
+
+    let html = '';
+    const renderProposalCard = (p) => {
+      const order = orderMap[p.order_id] || {};
+      const title = order.title || 'Заказ';
+      const client = clientMap[order.client_id] || {};
+      const price = p.price ? `${Number(p.price).toLocaleString('ru-RU')} ₽` : '';
+      const statusTag = p.status === 'accepted' ? '<div class="tag tag-green">✅ Принят</div>' :
+                        p.status === 'rejected' ? '<div class="tag tag-gray">Отклонён</div>' :
+                        '<div class="tag tag-yellow">⏳ Ждём</div>';
+      return `
+        <div class="job-card" style="${p.status === 'accepted' ? 'border-color:rgba(74,222,128,0.2);' : ''}">
+          <div class="job-card-header">
+            <div class="job-title">${escHtml(title)}</div>
+            ${statusTag}
+          </div>
+          ${price ? `<div style="font-size:12px;color:var(--muted2);margin:6px 0 10px;">Ваша цена: <b style="color:var(--text);">${price}</b></div>` : ''}
+          ${client.username ? `<button class="btn ${p.status === 'accepted' ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="openTelegramUser('${client.username}')">
+            ${p.status === 'accepted' ? 'Перейти в чат' : 'Написать заказчику'}
+          </button>` : ''}
+        </div>`;
+    };
+
+    if (pending.length) {
+      html += `<div class="section-title">Ожидание ответа <span class="badge">${pending.length}</span></div>`;
+      html += pending.map(renderProposalCard).join('');
+    }
+    if (accepted.length) {
+      html += `<div class="section-title" style="margin-top:4px;">Принятые</div>`;
+      html += accepted.map(renderProposalCard).join('');
+    }
+    if (rejected.length) {
+      html += `<div class="section-title" style="margin-top:4px;">Отклонённые</div>`;
+      html += rejected.map(renderProposalCard).join('');
+    }
+
+    container.innerHTML = html;
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+// ============ RENDER MY PROFILE ============
+function renderMyProfile() {
+  const isEditor = state.role === 'monter';
+  const name = state.user?.username || state.tgUser?.first_name || 'Пользователь';
+  const initials = name.slice(0, 2).toUpperCase();
+  const roleLabel = isEditor ? 'Монтажёр' : 'Заказчик';
+  const joined = state.user?.created_at ? new Date(state.user.created_at).toLocaleDateString('ru-RU') : '—';
+
+  document.getElementById('my-profile-content').innerHTML = `
+    <div class="profile-hero">
+      <div class="profile-avatar" style="border-color:rgba(232,255,71,0.3);">${initials}</div>
+      <div class="profile-name">${escHtml(name)}</div>
+      <div class="profile-handle">@${state.user?.username || 'user'} • ${roleLabel}</div>
+    </div>
+
+    <div class="my-profile-stats">
+      <div class="stat-card">
+        <div class="stat-card-value">—</div>
+        <div class="stat-card-label">${isEditor ? 'Выполнено' : 'Заказов'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value">${joined}</div>
+        <div class="stat-card-label">Дата входа</div>
+      </div>
+    </div>
+
+    <div style="padding:0 20px;">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted2);margin-bottom:6px;">Telegram ID</div>
+        <div style="font-size:13px;line-height:1.6;">${state.tgUser?.id || '—'}</div>
+      </div>
+
+      <button class="btn btn-danger" onclick="logout()">
+        Сменить роль / Выйти
+      </button>
+    </div>
+    <div class="scroll-pad"></div>`;
+}
+
+// ============ ACTIONS ============
+async function submitJob() {
+  const title = document.getElementById('job-title').value.trim();
+  const desc = document.getElementById('job-desc').value.trim();
+  const budget = document.getElementById('job-budget').value;
+
+  if (!title || !desc || !budget) {
+    showToast('⚠️ Заполните обязательные поля');
+    return;
+  }
+
+  const btn = document.getElementById('create-job-btn');
+  btn.disabled = true;
+  btn.textContent = 'Публикуем...';
+
+  try {
+    await sb.insert('orders', {
+      client_id: state.user.id,
+      title,
+      description: desc,
+      price: Number(budget),
+      status: 'open'
+    });
+
+    showToast('🚀 Заказ опубликован!', 'success');
+    document.getElementById('job-title').value = '';
+    document.getElementById('job-desc').value = '';
+    document.getElementById('job-budget').value = '';
+    document.getElementById('job-deadline').value = '';
+
+    setTimeout(() => goBackToDash(), 600);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Ошибка публикации. Попробуйте снова.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Опубликовать заказ 🚀';
+  }
+}
+
+async function submitResponse() {
+  const comment = document.getElementById('response-message').value.trim();
+  const price = document.getElementById('response-price').value;
+
+  if (!comment || !price) {
+    showToast('⚠️ Заполните все поля');
+    return;
+  }
+
+  const btn = document.getElementById('response-btn');
+  btn.disabled = true;
+  btn.textContent = 'Отправляем...';
+
+  try {
+    await sb.insert('proposals', {
+      order_id: state.currentOrderId,
+      monter_id: state.user.id,
+      price: Number(price),
+      comment,
+      status: 'pending'
+    });
+
+    showToast('✅ Отклик отправлен!', 'success');
+
+    // Show "already applied" state
+    document.getElementById('editor-response-section').innerHTML = `
+      <div style="padding:20px;">
+        <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:8px;">✅</div>
+          <div style="font-weight:600;color:#4ade80;margin-bottom:4px;">Отклик отправлен</div>
+          <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${Number(price).toLocaleString('ru-RU')} ₽</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Ошибка отправки. Возможно, вы уже откликнулись.');
+    btn.disabled = false;
+    btn.textContent = 'Отправить отклик';
+  }
+}
 
 // ============ NAVIGATION ============
-function navigate(screenId, params = {}) {
-  const prev = state.currentScreen;
-  
-  // Handle params
-  if (params.editor !== undefined) renderEditorProfile(params.editor);
-  if (params.job !== undefined) renderJobDetail(params.job, params.isClient);
-  if (screenId === 'screen-my-profile') renderMyProfile();
+const state_nav = {};
 
+function navigate(screenId) {
+  state.prevScreen = state.currentScreen;
   showScreen(screenId);
-  state.prevScreen = prev;
 }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => {
-    s.classList.remove('active', 'slide-back');
-  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'slide-back'));
   document.getElementById(id).classList.add('active');
   state.currentScreen = id;
-  
-  // Scroll to top
   document.getElementById(id).scrollTop = 0;
-  
   updateNav();
 }
 
 function goBack(target) {
-  const prev = state.prevScreen || target;
-  showScreen(prev);
+  showScreen(state.prevScreen || target);
 }
 
 function goBackToDash() {
@@ -1371,23 +1672,29 @@ function updateNav() {
   const s = state.currentScreen;
   const navScreens = ['screen-client-dashboard', 'screen-editor-dashboard', 'screen-my-jobs', 'screen-my-responses', 'screen-my-profile'];
   const showNav = navScreens.includes(s);
-  
+
   document.getElementById('bottom-nav').classList.toggle('hidden', !showNav);
   document.getElementById('fab').classList.toggle('hidden', s !== 'screen-client-dashboard' || state.role !== 'client');
 
-  // Update active nav item
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-  
   if (s.includes('dashboard')) document.getElementById('nav-home').classList.add('active');
   else if (s.includes('my-jobs') || s.includes('my-responses')) document.getElementById('nav-list').classList.add('active');
   else if (s.includes('my-profile')) document.getElementById('nav-profile').classList.add('active');
 }
 
-function navTo(tab) {
+async function navTo(tab) {
   if (tab === 'home') {
     showScreen(state.role === 'client' ? 'screen-client-dashboard' : 'screen-editor-dashboard');
+    if (state.role === 'client') await loadMonters();
+    else await loadOrders();
   } else if (tab === 'list') {
-    showScreen(state.role === 'client' ? 'screen-my-jobs' : 'screen-my-responses');
+    if (state.role === 'client') {
+      showScreen('screen-my-jobs');
+      await loadMyJobs();
+    } else {
+      showScreen('screen-my-responses');
+      await loadMyResponses();
+    }
   } else if (tab === 'profile') {
     renderMyProfile();
     showScreen('screen-my-profile');
@@ -1404,8 +1711,7 @@ function selectRole(role) {
   document.getElementById('check-client').style.display = role === 'client' ? 'block' : 'none';
   document.getElementById('check-editor').style.display = role === 'editor' ? 'block' : 'none';
   document.getElementById('continue-btn-wrap').style.display = 'block';
-  
-  // Show/hide editor-specific fields in setup
+
   const isEditor = role === 'editor';
   document.getElementById('editor-bio-row').style.display = isEditor ? '' : 'none';
   document.getElementById('editor-price-row').style.display = isEditor ? '' : 'none';
@@ -1417,258 +1723,111 @@ function goToSetup() {
   state.role = selectedRole;
   document.getElementById('dot1').classList.remove('active');
   document.getElementById('dot2').classList.add('active');
+
+  // Pre-fill name from Telegram
+  const tgName = state.tgUser?.first_name || '';
+  document.getElementById('setup-name').value = tgName;
+
   navigate('screen-setup');
 }
 
-function completeSetup() {
-  const name = document.getElementById('setup-name').value;
-  if (!name.trim()) { showToast('⚠️ Введите имя'); return; }
-  
-  document.getElementById('dot-s2').classList.remove('active');
-  document.getElementById('dot-s3').classList.add('active');
-  
-  showToast('✅ Профиль создан!', 'success');
-  
-  setTimeout(() => {
-    const dash = state.role === 'client' ? 'screen-client-dashboard' : 'screen-editor-dashboard';
-    
-    // Update nav labels
-    if (state.role === 'client') {
-      document.getElementById('nav-list-label').textContent = 'Заказы';
-    } else {
-      document.getElementById('nav-list-label').textContent = 'Отклики';
-    }
-    
-    showScreen(dash);
-  }, 600);
-}
+async function completeSetup() {
+  const name = document.getElementById('setup-name').value.trim();
+  if (!name) { showToast('⚠️ Введите имя'); return; }
 
-// ============ RENDER EDITOR PROFILE ============
-function renderEditorProfile(idx) {
-  const e = editors[idx];
-  const starsHtml = '★'.repeat(Math.floor(e.rating)) + (e.rating % 1 ? '½' : '');
-  
-  document.getElementById('editor-profile-content').innerHTML = `
-    <div class="profile-hero">
-      <div class="profile-avatar" style="background:${e.color}">${e.initials}</div>
-      <div class="profile-name">${e.name}</div>
-      <div class="profile-handle">${e.handle} • ${e.city}</div>
-      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
-        ${e.tags.map(t => `<span class="tag tag-gray">${t}</span>`).join('')}
-      </div>
-      <div class="profile-stats">
-        <div class="profile-stat">
-          <div class="profile-stat-value" style="color:#fbbf24;">${e.rating}</div>
-          <div class="profile-stat-label">Рейтинг</div>
-        </div>
-        <div class="profile-stat">
-          <div class="profile-stat-value">${e.reviews}</div>
-          <div class="profile-stat-label">Отзывов</div>
-        </div>
-        <div class="profile-stat">
-          <div class="profile-stat-value" style="color:var(--accent);">${(e.priceFrom/1000).toFixed(0)}к</div>
-          <div class="profile-stat-label">От (₽)</div>
-        </div>
-      </div>
-    </div>
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Сохраняем...';
 
-    <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
-      <div style="font-size:12px;color:var(--muted2);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">О себе</div>
-      <div style="font-size:14px;line-height:1.65;color:var(--muted2);">${e.bio}</div>
-    </div>
+  // Map role: 'editor' → 'monter', 'client' → 'client'
+  const dbRole = state.role === 'editor' ? 'monter' : 'client';
 
-    <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
-      <div style="font-size:12px;color:var(--muted2);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Портфолио</div>
-      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
-        ${['🎬','📹','🎞️','✨','🎵'].map(e => `<div class="portfolio-thumb" style="width:90px;height:60px;">${e}</div>`).join('')}
-      </div>
-    </div>
+  try {
+    const updated = await sb.update('users',
+      { role: dbRole, username: name },
+      `id=eq.${state.user.id}`
+    );
+    state.user.role = dbRole;
+    state.user.username = name;
+    state.role = dbRole;
 
-    <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
-      <div style="font-size:12px;color:var(--muted2);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Отзывы</div>
-      ${e.reviewList.map(r => `
-        <div class="review-item">
-          <div class="review-header">
-            <div class="avatar" style="width:28px;height:28px;font-size:10px;background:var(--bg3);">${r.author[0]}</div>
-            <div style="font-weight:600;font-size:12px;flex:1;">${r.author}</div>
-            <div style="color:#fbbf24;font-size:12px;">${'★'.repeat(r.rating)}</div>
-          </div>
-          <div class="review-text">${r.text}</div>
-        </div>
-      `).join('')}
-    </div>
+    document.getElementById('dot-s2').classList.remove('active');
+    document.getElementById('dot-s3').classList.add('active');
 
-    <div style="padding:16px 20px 100px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
-        <div style="font-size:12px;color:var(--muted2);margin-bottom:2px;">Стоимость работ</div>
-        <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--accent);">${e.priceFrom.toLocaleString()} – ${e.priceTo.toLocaleString()} ₽</div>
-      </div>
-      <button class="connect-btn" onclick="openTelegram('${e.handle.slice(1)}')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
-        Написать в Telegram
-      </button>
-    </div>
-  `;
-}
+    showToast('✅ Профиль создан!', 'success');
 
-// ============ RENDER JOB DETAIL ============
-function renderJobDetail(idx, isClient) {
-  const job = jobs[idx];
-  state.currentJob = idx;
-  state.isClientView = !!isClient;
-  
-  const isClientRole = state.role === 'client';
-  
-  document.getElementById('job-detail-header').textContent = job.title.length > 22 ? job.title.slice(0,22)+'…' : job.title;
-  
-  document.getElementById('job-detail-content').innerHTML = `
-    <div style="margin-bottom:8px;">
-      <div class="tag tag-green" style="margin-bottom:12px;">Открыт</div>
-      <h2 class="display-title" style="font-size:18px;line-height:1.25;margin-bottom:12px;">${job.title}</h2>
-      <p style="font-size:14px;color:var(--muted2);line-height:1.65;">${job.desc}</p>
-    </div>
-    
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Бюджет</div>
-        <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent);">${job.budget.toLocaleString()} ₽</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Дедлайн</div>
-        <div style="font-size:13px;font-weight:600;">${job.deadline}</div>
-      </div>
-    </div>
+    const navListLabel = document.getElementById('nav-list-label');
+    navListLabel.textContent = state.role === 'client' ? 'Заказы' : 'Отклики';
 
-    <div class="client-row">
-      <div class="avatar" style="width:36px;height:36px;font-size:12px;background:var(--bg3);">${job.client[0]}</div>
-      <div>
-        <div style="font-size:13px;font-weight:600;">${job.client}</div>
-        <div style="font-size:11px;color:var(--muted);">Заказчик</div>
-      </div>
-      ${!isClientRole ? `<button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="openTelegram('${job.clientHandle.slice(1)}')">Написать</button>` : ''}
-    </div>
-  `;
-  
-  // Show correct section
-  document.getElementById('editor-response-section').style.display = (!isClientRole) ? 'block' : 'none';
-  document.getElementById('client-responses-section').style.display = (isClientRole || isClient) ? 'block' : 'none';
-}
+    updateHeaderUI();
 
-// ============ RENDER MY PROFILE ============
-function renderMyProfile() {
-  const isEditor = state.role === 'editor';
-  document.getElementById('my-profile-content').innerHTML = `
-    <div class="profile-hero">
-      <div class="profile-avatar" style="border-color:rgba(232,255,71,0.3);">АВ</div>
-      <div class="profile-name">Алексей Волков</div>
-      <div class="profile-handle">@alexey_v • ${isEditor ? 'Монтажёр' : 'Заказчик'}</div>
-    </div>
-
-    ${isEditor ? `
-    <div class="my-profile-stats">
-      <div class="stat-card">
-        <div class="stat-card-value">4.8</div>
-        <div class="stat-card-label">Рейтинг</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value">12</div>
-        <div class="stat-card-label">Выполнено</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value">3</div>
-        <div class="stat-card-label">В работе</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value">5к–30к</div>
-        <div class="stat-card-label">Цена (₽)</div>
-      </div>
-    </div>` : `
-    <div class="my-profile-stats">
-      <div class="stat-card">
-        <div class="stat-card-value">8</div>
-        <div class="stat-card-label">Заказов создано</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value">6</div>
-        <div class="stat-card-label">Завершено</div>
-      </div>
-    </div>`}
-
-    <div style="padding:0 20px;">
-      <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--muted2);margin-bottom:6px;">О себе</div>
-        <div style="font-size:13px;line-height:1.6;">
-          ${isEditor ? 'Монтирую видео для YouTube и рекламы. 5 лет опыта, работал с брендами Samsung, Sber.' : 'Создаю видеоконтент для бизнеса и личных проектов.'}
-        </div>
-      </div>
-
-      <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="showToast('✏️ Редактирование профиля')">
-        ✏️ Редактировать профиль
-      </button>
-
-      <button class="btn btn-danger" onclick="logout()">
-        Сменить роль / Выйти
-      </button>
-    </div>
-    <div class="scroll-pad"></div>
-  `;
-}
-
-// ============ ACTIONS ============
-function submitJob() {
-  const title = document.getElementById('job-title').value;
-  const desc = document.getElementById('job-desc').value;
-  const budget = document.getElementById('job-budget').value;
-  
-  if (!title || !desc || !budget) {
-    showToast('⚠️ Заполните обязательные поля');
-    return;
+    setTimeout(async () => {
+      await enterDashboard();
+    }, 600);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Ошибка сохранения');
+    btn.disabled = false;
+    btn.textContent = 'Готово — открыть приложение 🚀';
   }
-  
-  showToast('🚀 Заказ опубликован!', 'success');
-  setTimeout(() => {
-    document.getElementById('job-title').value = '';
-    document.getElementById('job-desc').value = '';
-    document.getElementById('job-budget').value = '';
-    showScreen('screen-client-dashboard');
-  }, 800);
 }
 
-function submitResponse() {
-  const msg = document.getElementById('response-message').value;
-  const price = document.getElementById('response-price').value;
-  
-  if (!msg || !price) {
-    showToast('⚠️ Заполните все поля');
-    return;
-  }
-  
-  showToast('✅ Отклик отправлен!', 'success');
-  setTimeout(() => {
-    document.getElementById('response-message').value = '';
-    document.getElementById('response-price').value = '';
-    showScreen('screen-editor-dashboard');
-  }, 800);
-}
+async function logout() {
+  // Reset role in DB
+  try {
+    await sb.update('users', { role: null }, `id=eq.${state.user.id}`);
+  } catch(e) {}
 
-function selectEditorAction() {
-  showToast('✅ Монтажёр выбран! Перейдите в чат.', 'success');
-}
-
-function openTelegram(username) {
-  showToast(`📱 Открываю Telegram: @${username}`);
-  // In real app: window.Telegram.WebApp.openTelegramLink(`https://t.me/${username}`)
-}
-
-function logout() {
   state.role = null;
   selectedRole = null;
+  if (state.user) state.user.role = null;
+
   document.getElementById('role-client').classList.remove('selected');
   document.getElementById('role-editor').classList.remove('selected');
   document.getElementById('check-client').style.display = 'none';
   document.getElementById('check-editor').style.display = 'none';
   document.getElementById('continue-btn-wrap').style.display = 'none';
   showScreen('screen-onboarding');
+}
+
+// ============ TELEGRAM UTILS ============
+function openTelegramUser(username) {
+  if (!username) { showToast('❌ Username не указан'); return; }
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.openTelegramLink(`https://t.me/${username}`);
+  } else {
+    window.open(`https://t.me/${username}`, '_blank');
+  }
+}
+
+// ============ HELPERS ============
+function getStatusTag(status) {
+  const map = {
+    open: '<div class="tag tag-green" style="font-size:10px;">Открыт</div>',
+    in_progress: '<div class="tag tag-blue" style="font-size:10px;">В работе</div>',
+    done: '<div class="tag tag-gray" style="font-size:10px;">Завершён</div>',
+    cancelled: '<div class="tag tag-orange" style="font-size:10px;">Отменён</div>',
+  };
+  return map[status] || `<div class="tag tag-gray" style="font-size:10px;">${status}</div>`;
+}
+
+function getStatusLabel(status) {
+  const map = { open: 'Открыт', in_progress: 'В работе', done: 'Завершён', cancelled: 'Отменён' };
+  return map[status] || status;
+}
+
+function declension(n, forms) {
+  const abs = Math.abs(n) % 100;
+  const n1 = abs % 10;
+  if (abs > 10 && abs < 20) return forms[2];
+  if (n1 > 1 && n1 < 5) return forms[1];
+  if (n1 === 1) return forms[0];
+  return forms[2];
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function filterChip(el) {
@@ -1697,10 +1856,12 @@ function closeModal(e) {
 }
 
 // ============ INIT ============
-// Pre-fill editor-specific setup fields visibility
 document.getElementById('editor-bio-row').style.display = 'none';
 document.getElementById('editor-price-row').style.display = 'none';
 document.getElementById('editor-portfolio-row').style.display = 'none';
+
+// Start app
+initApp();
 </script>
 </body>
 </html>
