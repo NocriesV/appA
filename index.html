@@ -555,7 +555,7 @@
     <div style="color:var(--muted2);font-size:13px;">Загрузка...</div>
   </div>
 
-  <!-- =================== ONBOARDING =================== -->
+  <!-- =================== ONBOARDING: WELCOME =================== -->
   <div class="screen" id="screen-onboarding">
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;">
       <div style="width:100%;max-width:340px;text-align:center;">
@@ -563,56 +563,86 @@
           <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
             <path d="M8 12L22 6L36 12V24C36 31.7 29.5 38 22 40C14.5 38 8 31.7 8 24V12Z" fill="#000" opacity="0.6"/>
             <path d="M17 22L20.5 25.5L27 18" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="10" y="28" width="8" height="4" rx="2" fill="#000" opacity="0.4"/>
-            <rect x="26" y="28" width="8" height="4" rx="2" fill="#000" opacity="0.4"/>
           </svg>
         </div>
-
-        <div class="progress-dots">
-          <div class="dot active" id="dot1"></div>
-          <div class="dot" id="dot2"></div>
-          <div class="dot" id="dot3"></div>
-        </div>
-
-        <h1 class="display-title fade-up" style="font-size:26px;line-height:1.15;margin-bottom:10px;">
-          Биржа<br>видеомонтажёров
-        </h1>
-        <p class="fade-up fade-up-1" style="color:var(--muted2);font-size:14px;line-height:1.6;margin-bottom:36px;">
-          Находите заказчиков и исполнителей быстро — прямо в Telegram
+        <h1 class="display-title fade-up" style="font-size:28px;line-height:1.15;margin-bottom:10px;">Editex</h1>
+        <p class="fade-up fade-up-1" style="color:var(--muted2);font-size:14px;line-height:1.6;margin-bottom:40px;">
+          Биржа видеомонтажёров в Telegram
         </p>
-
-        <p class="fade-up fade-up-2" style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">
-          Кто вы?
-        </p>
-
-        <div class="role-cards fade-up fade-up-3">
-          <div class="role-card" id="role-client" onclick="selectRole('client')">
-            <div class="role-emoji">🎬</div>
-            <div class="role-info">
-              <h3>Заказчик</h3>
-              <p>Публикую задания и ищу профессиональных монтажёров</p>
-            </div>
-            <svg id="check-client" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none;flex-shrink:0;">
-              <circle cx="10" cy="10" r="10" fill="#e8ff47"/>
-              <path d="M6 10L9 13L14 7" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="role-card" id="role-editor" onclick="selectRole('editor')">
-            <div class="role-emoji">✂️</div>
-            <div class="role-info">
-              <h3>Монтажёр</h3>
-              <p>Берусь за проекты и зарабатываю на своём таланте</p>
-            </div>
-            <svg id="check-editor" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none;flex-shrink:0;">
-              <circle cx="10" cy="10" r="10" fill="#e8ff47"/>
-              <path d="M6 10L9 13L14 7" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;" class="fade-up fade-up-2">
+          <button class="btn btn-primary" onclick="showScreen('screen-register')">
+            Зарегистрироваться
+          </button>
+          <button class="btn btn-secondary" onclick="showScreen('screen-login')">
+            Войти (уже есть аккаунт)
+          </button>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="fade-up fade-up-4" id="continue-btn-wrap" style="width:100%;display:none;">
-          <button class="btn btn-primary" onclick="goToSetup()">Продолжить →</button>
+  <!-- =================== LOGIN =================== -->
+  <div class="screen" id="screen-login">
+    <div class="page-header">
+      <div class="back-btn" onclick="showScreen('screen-onboarding')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Вход</span>
+    </div>
+    <div style="padding:24px 20px;">
+      <p style="color:var(--muted2);font-size:13px;line-height:1.6;margin-bottom:24px;">
+        Если вы уже регистрировались — мы найдём ваш аккаунт по Telegram ID автоматически.<br><br>
+        Или введите свой username для поиска:
+      </p>
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Telegram username</label>
+          <input class="input" placeholder="@username" id="login-username">
         </div>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()" id="login-btn" style="margin-top:8px;">
+        Войти →
+      </button>
+      <div style="text-align:center;margin-top:16px;">
+        <span style="font-size:13px;color:var(--muted2);">Нет аккаунта? </span>
+        <span style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;" onclick="showScreen('screen-register')">Зарегистрироваться</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== REGISTER: ROLE =================== -->
+  <div class="screen" id="screen-register">
+    <div class="page-header">
+      <div class="back-btn" onclick="showScreen('screen-onboarding')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="display-title" style="font-size:15px;">Регистрация</span>
+    </div>
+    <div style="padding:24px 28px;">
+      <div class="progress-dots" style="justify-content:flex-start;margin-bottom:20px;">
+        <div class="dot active"></div><div class="dot"></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Кто вы?</p>
+      <div class="role-cards">
+        <div class="role-card" id="role-client" onclick="selectRole('client')">
+          <div class="role-emoji">🎬</div>
+          <div class="role-info"><h3>Заказчик</h3><p>Публикую задания и ищу монтажёров</p></div>
+          <svg id="check-client" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none;flex-shrink:0;">
+            <circle cx="10" cy="10" r="10" fill="#e8ff47"/>
+            <path d="M6 10L9 13L14 7" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="role-card" id="role-editor" onclick="selectRole('editor')">
+          <div class="role-emoji">✂️</div>
+          <div class="role-info"><h3>Монтажёр</h3><p>Беру проекты и зарабатываю на своём таланте</p></div>
+          <svg id="check-editor" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none;flex-shrink:0;">
+            <circle cx="10" cy="10" r="10" fill="#e8ff47"/>
+            <path d="M6 10L9 13L14 7" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div id="continue-btn-wrap" style="width:100%;display:none;margin-top:4px;">
+        <button class="btn btn-primary" onclick="goToSetup()">Далее →</button>
       </div>
     </div>
   </div>
@@ -620,7 +650,7 @@
   <!-- =================== SETUP PROFILE =================== -->
   <div class="screen" id="screen-setup">
     <div class="page-header">
-      <div class="back-btn" onclick="goBack('screen-onboarding')">
+      <div class="back-btn" onclick="showScreen('screen-register')">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="#f0f0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
       <span class="display-title" style="font-size:15px;">Настройка профиля</span>
@@ -639,15 +669,27 @@
           <input class="input" placeholder="Иван Петров" id="setup-name">
         </div>
         <div class="input-group">
-          <label class="input-label">Telegram username *</label>
+          <label class="input-label">Telegram @username *</label>
           <input class="input" placeholder="@username" id="setup-tg-username">
         </div>
       </div>
 
-      <div class="form-row" id="editor-bio-row">
-        <div class="input-group">
-          <label class="input-label">О себе</label>
-          <textarea class="input" rows="3" placeholder="Расскажите о своём опыте и специализации..." id="setup-bio"></textarea>
+      <div id="editor-bio-row">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Опыт работы</label>
+            <input class="input" placeholder="Например: 3 года, 50+ проектов" id="setup-experience">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Специализация (можно несколько)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+              <div class="chip" id="spec-reels" onclick="toggleSpec('reels')">📱 Reels/Shorts</div>
+              <div class="chip" id="spec-youtube" onclick="toggleSpec('youtube')">🎬 YouTube</div>
+              <div class="chip" id="spec-clips" onclick="toggleSpec('clips')">🎵 Клипы</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -685,11 +727,10 @@
         </div>
 
         <div class="filter-chips">
-          <div class="chip active" onclick="filterChip(this)">Все</div>
-          <div class="chip" onclick="filterChip(this)">⭐ Топ</div>
-          <div class="chip" onclick="filterChip(this)">🎬 YouTube</div>
-          <div class="chip" onclick="filterChip(this)">📱 Reels/Shorts</div>
-          <div class="chip" onclick="filterChip(this)">🎵 Клипы</div>
+          <div class="chip active" data-cat="all" onclick="filterMonters(this)">Все</div>
+          <div class="chip" data-cat="reels" onclick="filterMonters(this)">📱 Reels/Shorts</div>
+          <div class="chip" data-cat="youtube" onclick="filterMonters(this)">🎬 YouTube</div>
+          <div class="chip" data-cat="clips" onclick="filterMonters(this)">🎵 Клипы</div>
         </div>
       </div>
 
@@ -999,7 +1040,7 @@ async function initApp() {
     await loadOrCreateUser();
   } catch (e) {
     console.error('Init error:', e);
-    showToast('❌ Ошибка подключения');
+    showToast('❌ Ошибка подключения к серверу');
     showScreen('screen-onboarding');
   }
 }
@@ -1016,21 +1057,56 @@ async function loadOrCreateUser() {
     state.role = state.user.role;
 
     if (state.role) {
-      // User has a role — go straight to dashboard
+      // Returning user with saved profile — go straight to dashboard
       await enterDashboard();
     } else {
-      // User exists but no role set yet
+      // Exists but no role — show onboarding
       showScreen('screen-onboarding');
     }
   } else {
-    // New user — create record
+    // Brand new user — create minimal record
     const newUser = await sb.insert('users', {
       telegram_id: telegramId,
-      username: state.tgUser.username || state.tgUser.first_name || 'user',
+      username: state.tgUser.username || state.tgUser.first_name || '',
       role: null
     });
     state.user = Array.isArray(newUser) ? newUser[0] : newUser;
     showScreen('screen-onboarding');
+  }
+}
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const usernameRaw = (document.getElementById('login-username').value || '').trim().replace(/^@/, '');
+
+  btn.disabled = true;
+  btn.textContent = 'Ищем...';
+
+  try {
+    // First try by telegram_id (auto login from TG context)
+    const telegramId = String(state.tgUser.id);
+    let users = await sb.select('users', `telegram_id=eq.${telegramId}&limit=1`);
+
+    // If not found by TG id and username entered — search by username
+    if ((!users || users.length === 0) && usernameRaw) {
+      users = await sb.select('users', `tg_username=eq.${usernameRaw}&limit=1`);
+    }
+
+    if (users && users.length > 0 && users[0].role) {
+      state.user = users[0];
+      state.role = users[0].role;
+      showToast('✅ Добро пожаловать!', 'success');
+      setTimeout(() => enterDashboard(), 500);
+    } else {
+      showToast('❌ Аккаунт не найден. Зарегистрируйтесь.');
+      btn.disabled = false;
+      btn.textContent = 'Войти →';
+    }
+  } catch(e) {
+    console.error('doLogin error:', e);
+    showToast('❌ Ошибка входа: ' + sbError(e).slice(0, 60));
+    btn.disabled = false;
+    btn.textContent = 'Войти →';
   }
 }
 
@@ -1066,29 +1142,45 @@ function updateHeaderUI() {
 }
 
 // ============ LOAD MONTERS (for client dashboard) ============
-async function loadMonters() {
+async function loadMonters(cat = 'all') {
   const container = document.getElementById('editors-list');
   container.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
 
   try {
-    // Load all montagers (users with role = monter)
-    const monters = await sb.select('users', `role=eq.monter&order=created_at.desc`);
+    if (!state._montersCache || state._montersCache.length === 0) {
+      const monters = await sb.select('users', `role=eq.monter&order=created_at.desc`);
+      state._montersCache = monters || [];
+    }
 
-    if (!monters || monters.length === 0) {
+    let list = state._montersCache;
+
+    // Filter by category (specialty field)
+    if (cat !== 'all') {
+      list = list.filter(m => (m.specialty || '').toLowerCase().includes(cat));
+    }
+
+    if (!list || list.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">✂️</div>
-          <div class="empty-state-title">Монтажёров пока нет</div>
+          <div class="empty-state-title">${cat === 'all' ? 'Монтажёров пока нет' : 'Нет монтажёров в этой категории'}</div>
           <div class="empty-state-desc">Скоро здесь появятся профессиональные монтажёры</div>
         </div>`;
       return;
     }
 
-    container.innerHTML = monters.map((m, i) => renderMonterCard(m, i)).join('');
+    container.innerHTML = list.map((m, i) => renderMonterCard(m, i)).join('');
   } catch (e) {
     console.error('loadMonters error:', e);
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
   }
+}
+
+function filterMonters(el) {
+  el.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const cat = el.getAttribute('data-cat') || 'all';
+  loadMonters(cat);
 }
 
 function renderMonterCard(user, idx) {
@@ -1103,26 +1195,37 @@ function renderMonterCard(user, idx) {
   ];
   const color = colors[idx % colors.length];
 
+  const specMap = {
+    reels: { label: 'Reels/Shorts', cls: 'tag-orange' },
+    youtube: { label: 'YouTube', cls: 'tag-blue' },
+    clips: { label: 'Клипы', cls: 'tag-green' },
+  };
+  const specs = (user.specialty || '').split(',').map(s => s.trim()).filter(Boolean);
+  const tagsHtml = specs.length > 0
+    ? specs.map(s => {
+        const m = specMap[s] || { label: s, cls: 'tag-gray' };
+        return `<span class="tag ${m.cls}">${m.label}</span>`;
+      }).join('')
+    : '<span class="tag tag-gray">Монтаж</span>';
+
+  const exp = user.experience ? `<span style="font-size:11px;color:var(--muted2);">📅 ${escHtml(user.experience)}</span>` : '';
+
   return `
     <div class="editor-card fade-up" style="animation-delay:${idx * 0.05}s" onclick="viewMonterProfile('${user.id}')">
       <div class="editor-card-top">
         <div class="avatar" style="width:52px;height:52px;font-size:18px;background:${color};">${initials}</div>
         <div class="editor-meta">
-          <div class="editor-name">${name}</div>
-          <div class="editor-title">Монтажёр • Telegram</div>
-          <div class="editor-stats">
+          <div class="editor-name">${escHtml(name)}</div>
+          ${exp}
+          <div class="editor-stats" style="margin-top:4px;">
             <div class="editor-price">Открыт к заказам</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <div class="status-dot"></div>
-          <span style="font-size:10px;color:var(--muted);">Active</span>
         </div>
       </div>
-      <div class="editor-tags" style="margin-top:10px;">
-        <span class="tag tag-green">Монтаж</span>
-        <span class="tag tag-blue">Видео</span>
-      </div>
+      <div class="editor-tags" style="margin-top:10px;">${tagsHtml}</div>
     </div>`;
 }
 
@@ -1154,8 +1257,14 @@ async function viewMonterProfileFull(userId) {
 function renderMonterProfileById(user, portfolio = []) {
   const name = user.username || 'Монтажёр';
   const initials = name.slice(0, 2).toUpperCase();
-  const tgHandle = user.tg_username || user.username || '';
+  const tgHandle = user.tg_username || '';
   const bio = user.bio || '';
+  const exp = user.experience || '';
+  const specs = (user.specialty || '').split(',').map(s => s.trim()).filter(Boolean);
+  const specLabels = { reels: '📱 Reels/Shorts', youtube: '🎬 YouTube', clips: '🎵 Клипы' };
+  const specTagsHtml = specs.length > 0
+    ? specs.map(s => `<span class="tag tag-orange">${specLabels[s] || s}</span>`).join('')
+    : '<span class="tag tag-gray">Монтаж</span>';
 
   // Portfolio cards
   let portfolioHtml = '';
@@ -1163,8 +1272,10 @@ function renderMonterProfileById(user, portfolio = []) {
     portfolioHtml = portfolio.map(p => {
       const isYT = p.url && (p.url.includes('youtube') || p.url.includes('youtu.be'));
       const isVimeo = p.url && p.url.includes('vimeo');
-      const icon = isYT ? '▶️' : isVimeo ? '🎞' : '🎬';
-      const title = p.title || (isYT ? 'YouTube' : 'Видео');
+      const isGDrive = p.url && p.url.includes('drive.google');
+      const isYaDisk = p.url && (p.url.includes('disk.yandex') || p.url.includes('yadi.sk'));
+      const icon = isYT ? '▶️' : isVimeo ? '🎞' : isGDrive ? '📁' : isYaDisk ? '💾' : '🎬';
+      const title = p.title || (isYT ? 'YouTube' : isGDrive ? 'Google Drive' : isYaDisk ? 'Яндекс Диск' : 'Видео');
       return `
         <a href="${escHtml(p.url)}" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--text);transition:border-color 0.15s;" onmouseenter="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
           <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1e1e22,#2a2a30);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${icon}</div>
@@ -1185,12 +1296,12 @@ function renderMonterProfileById(user, portfolio = []) {
       <div class="profile-name">${escHtml(name)}</div>
       <div class="profile-handle">${tgHandle ? '@' + tgHandle + ' • ' : ''}Монтажёр</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">
-        <span class="tag tag-green">Монтаж</span>
-        <span class="tag tag-blue">Видео</span>
+        ${specTagsHtml}
       </div>
+      ${exp ? `<div style="font-size:12px;color:var(--muted2);margin-top:4px;">📅 ${escHtml(exp)}</div>` : ''}
     </div>
 
-    ${bio ? `<div style="padding:0 20px 0;margin-bottom:0;"><div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;"><div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">О себе</div><div style="font-size:13px;color:var(--muted2);line-height:1.6;">${escHtml(bio)}</div></div></div>` : ''}
+    ${bio ? `<div style="padding:0 20px;margin-bottom:0;"><div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;"><div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">О себе</div><div style="font-size:13px;color:var(--muted2);line-height:1.6;">${escHtml(bio)}</div></div></div>` : ''}
 
     <div style="padding:16px 20px 4px;">
       <div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">
@@ -1582,6 +1693,23 @@ async function renderMyProfile() {
     } catch(e) {}
   }
 
+  // Load full user data fresh to avoid stale state
+  if (state.user?.id) {
+    try {
+      const fresh = await sb.select('users', `id=eq.${state.user.id}&limit=1`);
+      if (fresh?.[0]) {
+        state.user = fresh[0];
+        state.role = fresh[0].role || state.role;
+      }
+    } catch(e) {}
+  }
+
+  const specs = (state.user?.specialty || '').split(',').map(s => s.trim()).filter(Boolean);
+  const specLabels = { reels: '📱 Reels/Shorts', youtube: '🎬 YouTube', clips: '🎵 Клипы' };
+  const specTagsHtml = isEditor
+    ? (specs.length > 0 ? specs.map(s => `<span class="tag tag-orange">${specLabels[s] || s}</span>`).join('') : '<span style="font-size:12px;color:var(--muted);">Не указано</span>')
+    : '';
+
   const portfolioSection = isEditor ? `
     <div style="padding:0 20px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1621,6 +1749,18 @@ async function renderMyProfile() {
     ${portfolioSection}
 
     <div style="padding:${isEditor ? '16px' : '0'} 20px 0;">
+      ${isEditor ? `
+      <div style="margin-bottom:12px;">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Специализация</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">${specTagsHtml}</div>
+        <button class="btn btn-secondary btn-sm" onclick="showEditSpecModal()">✏️ Изменить</button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">О себе</div>
+        <div style="font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:8px;">${escHtml(state.user?.bio || 'Не заполнено')}</div>
+        <button class="btn btn-secondary btn-sm" onclick="showEditBioModal()">✏️ Изменить</button>
+      </div>
+      ` : ''}
       <div class="card" style="margin-bottom:12px;">
         <div style="font-size:12px;color:var(--muted2);margin-bottom:4px;">Telegram ID</div>
         <div style="font-size:13px;">${state.tgUser?.id || '—'}</div>
@@ -1628,6 +1768,73 @@ async function renderMyProfile() {
       <button class="btn btn-danger" onclick="logout()">Сменить роль / Выйти</button>
     </div>
     <div class="scroll-pad"></div>`;
+}
+
+function showEditBioModal() {
+  const current = state.user?.bio || '';
+  openModal(`
+    <div class="display-title" style="font-size:16px;margin-bottom:16px;">О себе</div>
+    <div class="form-row">
+      <div class="input-group">
+        <label class="input-label">Расскажите о себе</label>
+        <textarea class="input" rows="4" placeholder="Опыт, стиль работы, специализация..." id="edit-bio-val">${escHtml(current)}</textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveBio()">Сохранить</button>
+  `);
+}
+
+async function saveBio() {
+  const val = (document.getElementById('edit-bio-val')?.value || '').trim();
+  try {
+    await sb.update('users', { bio: val }, `telegram_id=eq.${state.tgUser.id}`);
+    state.user.bio = val;
+    showToast('✅ Сохранено!', 'success');
+    document.getElementById('modal').classList.remove('show');
+    showScreen('screen-my-profile');
+    await renderMyProfile();
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
+  }
+}
+
+function showEditSpecModal() {
+  const specs = (state.user?.specialty || '').split(',').map(s => s.trim()).filter(Boolean);
+  window._editSpecs = [...specs];
+  const specLabels = { reels: '📱 Reels/Shorts', youtube: '🎬 YouTube', clips: '🎵 Клипы' };
+  openModal(`
+    <div class="display-title" style="font-size:16px;margin-bottom:16px;">Специализация</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      ${['reels','youtube','clips'].map(s => `
+        <div class="chip${specs.includes(s) ? ' active' : ''}" id="espec-${s}" onclick="toggleEditSpec('${s}')">${specLabels[s]}</div>
+      `).join('')}
+    </div>
+    <button class="btn btn-primary" onclick="saveSpec()">Сохранить</button>
+  `);
+}
+
+function toggleEditSpec(spec) {
+  if (!window._editSpecs) window._editSpecs = [];
+  const btn = document.getElementById('espec-' + spec);
+  const idx = window._editSpecs.indexOf(spec);
+  if (idx === -1) { window._editSpecs.push(spec); btn.classList.add('active'); }
+  else { window._editSpecs.splice(idx, 1); btn.classList.remove('active'); }
+}
+
+async function saveSpec() {
+  const val = (window._editSpecs || []).join(',');
+  try {
+    await sb.update('users', { specialty: val }, `telegram_id=eq.${state.tgUser.id}`);
+    state.user.specialty = val;
+    // Invalidate cache so dashboard refreshes
+    state._montersCache = null;
+    showToast('✅ Сохранено!', 'success');
+    document.getElementById('modal').classList.remove('show');
+    showScreen('screen-my-profile');
+    await renderMyProfile();
+  } catch(e) {
+    showToast('❌ ' + sbError(e).slice(0,80));
+  }
 }
 
 // ── Portfolio management ──
@@ -1654,9 +1861,11 @@ async function savePortfolioItem() {
   const title = (document.getElementById('pf-title')?.value || '').trim();
   const url = (document.getElementById('pf-url')?.value || '').trim();
   if (!url) { showToast('⚠️ Введите ссылку на видео'); return; }
-  try {
-    new URL(url);
-  } catch(_) { showToast('⚠️ Невалидная ссылка'); return; }
+  // Allow youtube, vimeo, google drive, yandex disk, and any https link
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    showToast('⚠️ Ссылка должна начинаться с https://');
+    return;
+  }
 
   // Check limit
   try {
@@ -1877,19 +2086,37 @@ function selectRole(role) {
   document.getElementById('editor-price-row').style.display = isEditor ? '' : 'none';
 }
 
+// Track selected specialties
+window._selectedSpecs = [];
+function toggleSpec(spec) {
+  const btn = document.getElementById('spec-' + spec);
+  const idx = window._selectedSpecs.indexOf(spec);
+  if (idx === -1) {
+    window._selectedSpecs.push(spec);
+    btn.classList.add('active');
+  } else {
+    window._selectedSpecs.splice(idx, 1);
+    btn.classList.remove('active');
+  }
+}
+
 function goToSetup() {
   if (!selectedRole) return;
   state.role = selectedRole;
-  document.getElementById('dot1').classList.remove('active');
-  document.getElementById('dot2').classList.add('active');
+  window._selectedSpecs = [];
+  ['reels','youtube','clips'].forEach(s => {
+    const b = document.getElementById('spec-' + s);
+    if (b) b.classList.remove('active');
+  });
 
   // Pre-fill name and username from Telegram
   const tgFirst = state.tgUser?.first_name || '';
   const tgUsername = state.tgUser?.username || '';
   document.getElementById('setup-name').value = tgFirst;
   document.getElementById('setup-tg-username').value = tgUsername ? '@' + tgUsername : '';
+  if (document.getElementById('setup-experience')) document.getElementById('setup-experience').value = '';
 
-  navigate('screen-setup');
+  showScreen('screen-setup');
 }
 
 async function completeSetup() {
@@ -1906,9 +2133,15 @@ async function completeSetup() {
   const dbRole = state.role === 'editor' ? 'monter' : 'client';
 
   try {
-    const bio = (document.getElementById('setup-bio')?.value || '').trim();
-    const updatePayload = { role: dbRole, username: name, tg_username: tgUsernameRaw };
-    if (bio) updatePayload.bio = bio;
+    const experience = (document.getElementById('setup-experience')?.value || '').trim();
+    const selectedSpecs = window._selectedSpecs || [];
+    const updatePayload = {
+      role: dbRole,
+      username: name,
+      tg_username: tgUsernameRaw,
+    };
+    if (experience) updatePayload.experience = experience;
+    if (selectedSpecs.length > 0) updatePayload.specialty = selectedSpecs.join(',');
     await sb.update('users', updatePayload, `telegram_id=eq.${state.tgUser.id}`);
     state.user.role = dbRole;
     state.user.username = name;
@@ -1937,14 +2170,17 @@ async function completeSetup() {
 }
 
 async function logout() {
-  // Reset role in DB
   try {
     await sb.update('users', { role: null }, `telegram_id=eq.${state.tgUser.id}`);
   } catch(e) {}
 
+  // Full state reset
   state.role = null;
+  state.user = null;
+  state._montersCache = null;
+  state.currentOrderId = null;
   selectedRole = null;
-  if (state.user) state.user.role = null;
+  window._selectedSpecs = [];
 
   document.getElementById('role-client').classList.remove('selected');
   document.getElementById('role-editor').classList.remove('selected');
