@@ -633,10 +633,14 @@
         <div class="dot" id="dot-s3"></div>
       </div>
 
-      <div class="form-row">
+      <div class="form-row-2">
         <div class="input-group">
           <label class="input-label">Ваше имя *</label>
           <input class="input" placeholder="Иван Петров" id="setup-name">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Telegram username *</label>
+          <input class="input" placeholder="@username" id="setup-tg-username">
         </div>
       </div>
 
@@ -655,13 +659,6 @@
         <div class="input-group">
           <label class="input-label">Цена до (₽)</label>
           <input class="input" type="number" placeholder="30000" id="setup-price-to">
-        </div>
-      </div>
-
-      <div class="form-row" id="editor-portfolio-row">
-        <div class="input-group">
-          <label class="input-label">Портфолио (ссылки через запятую)</label>
-          <textarea class="input" rows="2" placeholder="https://youtube.com/..." id="setup-portfolio"></textarea>
         </div>
       </div>
 
@@ -987,11 +984,14 @@ async function initApp() {
   if (tgUserRaw) {
     state.tgUser = tgUserRaw;
   } else {
-    // Fallback for testing outside Telegram
+    // Fallback: generate stable ID from browser fingerprint
+    const stored = localStorage.getItem('_editex_uid');
+    const uid = stored || (Date.now() * 1000 + Math.floor(Math.random() * 1000));
+    if (!stored) localStorage.setItem('_editex_uid', uid);
     state.tgUser = {
-      id: Math.floor(Math.random() * 9000000) + 1000000,
-      first_name: 'Тест',
-      username: 'test_user_' + Date.now()
+      id: Number(uid),
+      first_name: '',
+      username: ''
     };
   }
 
@@ -1127,41 +1127,83 @@ function renderMonterCard(user, idx) {
 }
 
 function viewMonterProfile(userId) {
-  const monter = state._montersCache?.find(m => m.id === userId);
-  if (monter) {
-    renderMonterProfileById(monter);
-  } else {
-    // Load from DB
-    sb.select('users', `id=eq.${userId}&limit=1`).then(([m]) => {
-      if (m) renderMonterProfileById(m);
-    });
-  }
-  navigate('screen-editor-profile');
+  viewMonterProfileFull(userId);
 }
 
-function renderMonterProfileById(user) {
+async function viewMonterProfileFull(userId) {
+  const screen = document.getElementById('editor-profile-content');
+  screen.innerHTML = '<div class="loader"><div class="spinner"></div> Загрузка...</div>';
+  navigate('screen-editor-profile');
+  try {
+    const users = await sb.select('users', `id=eq.${userId}&limit=1`);
+    const user = users?.[0];
+    if (!user) { screen.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Монтажёр не найден</div></div>'; return; }
+    // Load portfolio for this monter
+    let portfolio = [];
+    try {
+      const pRows = await sb.select('portfolio', `user_id=eq.${userId}&order=created_at.asc`);
+      if (pRows) portfolio = pRows;
+    } catch(e) {}
+    renderMonterProfileById(user, portfolio);
+  } catch(e) {
+    console.error(e);
+    screen.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Ошибка загрузки</div></div>';
+  }
+}
+
+function renderMonterProfileById(user, portfolio = []) {
   const name = user.username || 'Монтажёр';
   const initials = name.slice(0, 2).toUpperCase();
+  const tgHandle = user.tg_username || user.username || '';
+  const bio = user.bio || '';
+
+  // Portfolio cards
+  let portfolioHtml = '';
+  if (portfolio.length > 0) {
+    portfolioHtml = portfolio.map(p => {
+      const isYT = p.url && (p.url.includes('youtube') || p.url.includes('youtu.be'));
+      const isVimeo = p.url && p.url.includes('vimeo');
+      const icon = isYT ? '▶️' : isVimeo ? '🎞' : '🎬';
+      const title = p.title || (isYT ? 'YouTube' : 'Видео');
+      return `
+        <a href="${escHtml(p.url)}" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--text);transition:border-color 0.15s;" onmouseenter="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
+          <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1e1e22,#2a2a30);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(title)}</div>
+            <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.url)}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3h7v7M13 3L3 13" stroke="#6b6b72" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>`;
+    }).join('<div style="height:8px;"></div>');
+  } else {
+    portfolioHtml = `<div style="text-align:center;padding:24px 0;color:var(--muted2);font-size:13px;">Портфолио пока пусто</div>`;
+  }
+
   document.getElementById('editor-profile-content').innerHTML = `
     <div class="profile-hero">
       <div class="profile-avatar">${initials}</div>
-      <div class="profile-name">${name}</div>
-      <div class="profile-handle">@${user.username || 'user'} • Монтажёр</div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+      <div class="profile-name">${escHtml(name)}</div>
+      <div class="profile-handle">${tgHandle ? '@' + tgHandle + ' • ' : ''}Монтажёр</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">
         <span class="tag tag-green">Монтаж</span>
         <span class="tag tag-blue">Видео</span>
       </div>
     </div>
 
-    <div style="padding:16px 20px 100px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
-        <div style="font-size:12px;color:var(--muted2);margin-bottom:2px;">Профессиональный монтажёр</div>
-        <div style="font-size:13px;color:var(--muted2);">Зарегистрирован: ${new Date(user.created_at).toLocaleDateString('ru-RU')}</div>
+    ${bio ? `<div style="padding:0 20px 0;margin-bottom:0;"><div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;"><div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">О себе</div><div style="font-size:13px;color:var(--muted2);line-height:1.6;">${escHtml(bio)}</div></div></div>` : ''}
+
+    <div style="padding:16px 20px 4px;">
+      <div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">
+        Портфолио <span style="color:var(--muted);font-size:11px;">${portfolio.length}/5</span>
       </div>
-      <button class="connect-btn" onclick="openTelegramUser('${user.username || ''}')">
+      ${portfolioHtml}
+    </div>
+
+    <div style="padding:16px 20px 100px;">
+      ${tgHandle ? `<button class="connect-btn" onclick="openTelegramUser('${tgHandle}')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="#26b6ff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.9 8.2l-2 9.4c-.1.6-.5.8-.9.5l-2.5-1.8-1.2 1.1c-.1.1-.3.2-.6.2l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1L7.1 14.4l-2.5-.8c-.5-.2-.5-.5.1-.8l11.5-4.4c.5-.2.9.1.7.8z"/></svg>
         Написать в Telegram
-      </button>
+      </button>` : '<div style="text-align:center;font-size:12px;color:var(--muted);">Контакт не указан</div>'}
     </div>`;
 }
 
@@ -1376,12 +1418,12 @@ async function loadProposals(orderId) {
 async function acceptProposal(proposalId, orderId) {
   try {
     await sb.update('proposals', { status: 'accepted' }, `id=eq.${proposalId}`);
-    await sb.update('orders', { status: 'in_progress' }, `id=eq.${orderId}`);
+    await sb.update('orders', { status: 'in_progress', monter_id: null }, `id=eq.${orderId}`);
     showToast('✅ Монтажёр выбран!', 'success');
     await loadProposals(orderId);
   } catch(e) {
-    console.error(e);
-    showToast('❌ Ошибка. Попробуйте снова.');
+    console.error('acceptProposal error:', e);
+    showToast('❌ ' + sbError(e).slice(0, 100));
   }
 }
 
@@ -1524,45 +1566,144 @@ async function loadMyResponses() {
 }
 
 // ============ RENDER MY PROFILE ============
-function renderMyProfile() {
+async function renderMyProfile() {
   const isEditor = state.role === 'monter';
   const name = state.user?.username || state.tgUser?.first_name || 'Пользователь';
   const initials = name.slice(0, 2).toUpperCase();
   const roleLabel = isEditor ? 'Монтажёр' : 'Заказчик';
-  const joined = state.user?.created_at ? new Date(state.user.created_at).toLocaleDateString('ru-RU') : '—';
+  const tgHandle = state.user?.tg_username || state.tgUser?.username || '';
+
+  // Load portfolio if editor
+  let portfolio = [];
+  if (isEditor) {
+    try {
+      const pRows = await sb.select('portfolio', `user_id=eq.${state.user.id}&order=created_at.asc`);
+      if (pRows) portfolio = pRows;
+    } catch(e) {}
+  }
+
+  const portfolioSection = isEditor ? `
+    <div style="padding:0 20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;">
+          Портфолио <span style="color:var(--muted);font-size:11px;">${portfolio.length}/5</span>
+        </div>
+        ${portfolio.length < 5 ? `<button class="btn btn-ghost btn-sm" onclick="showAddPortfolioModal()">+ Добавить</button>` : '<span style="font-size:11px;color:var(--muted);">Максимум достигнут</span>'}
+      </div>
+      <div id="my-portfolio-list">
+        ${portfolio.length === 0
+          ? '<div style="text-align:center;padding:20px 0;color:var(--muted2);font-size:13px;">Нет видео — добавьте своё портфолио</div>'
+          : portfolio.map(p => {
+              const isYT = p.url && (p.url.includes('youtube') || p.url.includes('youtu.be'));
+              const icon = isYT ? '▶️' : '🎬';
+              const title = p.title || 'Видео';
+              return `
+                <div style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;">
+                  <div style="width:40px;height:40px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${icon}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(title)}</div>
+                    <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.url)}</div>
+                  </div>
+                  <button onclick="deletePortfolioItem('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0;" title="Удалить">×</button>
+                </div>`;
+            }).join('')
+        }
+      </div>
+    </div>` : '';
 
   document.getElementById('my-profile-content').innerHTML = `
     <div class="profile-hero">
       <div class="profile-avatar" style="border-color:rgba(232,255,71,0.3);">${initials}</div>
       <div class="profile-name">${escHtml(name)}</div>
-      <div class="profile-handle">@${state.user?.username || 'user'} • ${roleLabel}</div>
+      <div class="profile-handle">${tgHandle ? '@' + tgHandle + ' • ' : ''}${roleLabel}</div>
     </div>
 
-    <div class="my-profile-stats">
-      <div class="stat-card">
-        <div class="stat-card-value">—</div>
-        <div class="stat-card-label">${isEditor ? 'Выполнено' : 'Заказов'}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value">${joined}</div>
-        <div class="stat-card-label">Дата входа</div>
-      </div>
-    </div>
+    ${portfolioSection}
 
-    <div style="padding:0 20px;">
+    <div style="padding:${isEditor ? '16px' : '0'} 20px 0;">
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--muted2);margin-bottom:6px;">Telegram ID</div>
-        <div style="font-size:13px;line-height:1.6;">${state.tgUser?.id || '—'}</div>
+        <div style="font-size:12px;color:var(--muted2);margin-bottom:4px;">Telegram ID</div>
+        <div style="font-size:13px;">${state.tgUser?.id || '—'}</div>
       </div>
-
-      <button class="btn btn-danger" onclick="logout()">
-        Сменить роль / Выйти
-      </button>
+      <button class="btn btn-danger" onclick="logout()">Сменить роль / Выйти</button>
     </div>
     <div class="scroll-pad"></div>`;
 }
 
+// ── Portfolio management ──
+function showAddPortfolioModal() {
+  openModal(`
+    <div class="display-title" style="font-size:16px;margin-bottom:16px;">Добавить в портфолио</div>
+    <div class="form-row">
+      <div class="input-group">
+        <label class="input-label">Название видео</label>
+        <input class="input" placeholder="Влог / Реклама / Клип..." id="pf-title">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="input-group">
+        <label class="input-label">Ссылка на видео *</label>
+        <input class="input" placeholder="https://youtube.com/..." id="pf-url" type="url">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="savePortfolioItem()">Добавить видео</button>
+  `);
+}
+
+async function savePortfolioItem() {
+  const title = (document.getElementById('pf-title')?.value || '').trim();
+  const url = (document.getElementById('pf-url')?.value || '').trim();
+  if (!url) { showToast('⚠️ Введите ссылку на видео'); return; }
+  try {
+    new URL(url);
+  } catch(_) { showToast('⚠️ Невалидная ссылка'); return; }
+
+  // Check limit
+  try {
+    const existing = await sb.select('portfolio', `user_id=eq.${state.user.id}&select=id`);
+    if (existing && existing.length >= 5) {
+      showToast('⚠️ Максимум 5 видео');
+      document.getElementById('modal').classList.remove('show');
+      return;
+    }
+  } catch(e) {}
+
+  try {
+    await sb.insert('portfolio', { user_id: state.user.id, title: title || 'Видео', url });
+    showToast('✅ Видео добавлено!', 'success');
+    document.getElementById('modal').classList.remove('show');
+    await renderMyProfile();
+    showScreen('screen-my-profile');
+  } catch(e) {
+    console.error(e);
+    showToast('❌ ' + sbError(e).slice(0, 80));
+  }
+}
+
+async function deletePortfolioItem(id) {
+  try {
+    await sb.query(`portfolio?id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    showToast('🗑 Удалено', '');
+    await renderMyProfile();
+    showScreen('screen-my-profile');
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Ошибка удаления');
+  }
+}
+
 // ============ ACTIONS ============
+
+// Helper: extract readable error from Supabase response
+function sbError(e) {
+  try {
+    const p = JSON.parse(e.message);
+    return p.message || p.details || p.hint || JSON.stringify(p);
+  } catch(_) {
+    return e.message || 'Неизвестная ошибка';
+  }
+}
+
 async function submitJob() {
   const title = document.getElementById('job-title').value.trim();
   const desc = document.getElementById('job-desc').value.trim();
@@ -1573,29 +1714,40 @@ async function submitJob() {
     return;
   }
 
+  if (!state.user?.id) {
+    showToast('⚠️ Сессия истекла — перезайдите');
+    return;
+  }
+
   const btn = document.getElementById('create-job-btn');
   btn.disabled = true;
   btn.textContent = 'Публикуем...';
 
-  try {
-    await sb.insert('orders', {
-      client_id: state.user.id,
-      title,
-      description: desc,
-      price: Number(budget),
-      status: 'open'
-    });
+  // Schema: orders(id, created_at, client_id, monter_id, title, description, status, price)
+  const payload = {
+    client_id: state.user.id,
+    monter_id: null,
+    title: title,
+    description: desc,
+    price: Number(budget),
+    status: 'open',
+  };
 
+  try {
+    const result = await sb.insert('orders', payload);
+    console.log('Order created:', result);
     showToast('🚀 Заказ опубликован!', 'success');
     document.getElementById('job-title').value = '';
     document.getElementById('job-desc').value = '';
     document.getElementById('job-budget').value = '';
     document.getElementById('job-deadline').value = '';
-
-    setTimeout(() => goBackToDash(), 600);
+    setTimeout(() => {
+      goBackToDash();
+      if (state.role === 'client') loadMyJobs();
+    }, 600);
   } catch(e) {
-    console.error(e);
-    showToast('❌ Ошибка публикации. Попробуйте снова.');
+    console.error('submitJob error:', e);
+    showToast('❌ ' + sbError(e).slice(0, 100));
   } finally {
     btn.disabled = false;
     btn.textContent = 'Опубликовать заказ 🚀';
@@ -1611,33 +1763,41 @@ async function submitResponse() {
     return;
   }
 
+  if (!state.user?.id || !state.currentOrderId) {
+    showToast('⚠️ Данные не загружены, перезайдите');
+    return;
+  }
+
   const btn = document.getElementById('response-btn');
   btn.disabled = true;
   btn.textContent = 'Отправляем...';
 
-  try {
-    await sb.insert('proposals', {
-      order_id: state.currentOrderId,
-      monter_id: state.user.id,
-      price: Number(price),
-      comment,
-      status: 'pending'
-    });
+  // Schema: proposals(id, created_at, order_id, monter_id, price, comment, status)
+  const payload = {
+    order_id: state.currentOrderId,
+    monter_id: state.user.id,
+    price: Number(price),
+    comment: comment,
+    status: 'pending',
+  };
 
+  try {
+    const result = await sb.insert('proposals', payload);
+    console.log('Proposal created:', result);
     showToast('✅ Отклик отправлен!', 'success');
 
-    // Show "already applied" state
+    const priceFormatted = Number(price).toLocaleString('ru-RU');
     document.getElementById('editor-response-section').innerHTML = `
       <div style="padding:20px;">
         <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px;text-align:center;">
           <div style="font-size:20px;margin-bottom:8px;">✅</div>
           <div style="font-weight:600;color:#4ade80;margin-bottom:4px;">Отклик отправлен</div>
-          <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${Number(price).toLocaleString('ru-RU')} ₽</div>
+          <div style="font-size:12px;color:var(--muted2);">Ваша цена: ${priceFormatted} ₽</div>
         </div>
       </div>`;
   } catch(e) {
-    console.error(e);
-    showToast('❌ Ошибка отправки. Возможно, вы уже откликнулись.');
+    console.error('submitResponse error:', e);
+    showToast('❌ ' + sbError(e).slice(0, 100));
     btn.disabled = false;
     btn.textContent = 'Отправить отклик';
   }
@@ -1696,8 +1856,8 @@ async function navTo(tab) {
       await loadMyResponses();
     }
   } else if (tab === 'profile') {
-    renderMyProfile();
     showScreen('screen-my-profile');
+    await renderMyProfile();
   }
 }
 
@@ -1715,7 +1875,6 @@ function selectRole(role) {
   const isEditor = role === 'editor';
   document.getElementById('editor-bio-row').style.display = isEditor ? '' : 'none';
   document.getElementById('editor-price-row').style.display = isEditor ? '' : 'none';
-  document.getElementById('editor-portfolio-row').style.display = isEditor ? '' : 'none';
 }
 
 function goToSetup() {
@@ -1724,16 +1883,20 @@ function goToSetup() {
   document.getElementById('dot1').classList.remove('active');
   document.getElementById('dot2').classList.add('active');
 
-  // Pre-fill name from Telegram
-  const tgName = state.tgUser?.first_name || '';
-  document.getElementById('setup-name').value = tgName;
+  // Pre-fill name and username from Telegram
+  const tgFirst = state.tgUser?.first_name || '';
+  const tgUsername = state.tgUser?.username || '';
+  document.getElementById('setup-name').value = tgFirst;
+  document.getElementById('setup-tg-username').value = tgUsername ? '@' + tgUsername : '';
 
   navigate('screen-setup');
 }
 
 async function completeSetup() {
   const name = document.getElementById('setup-name').value.trim();
+  let tgUsernameRaw = (document.getElementById('setup-tg-username').value || '').trim().replace(/^@/, '');
   if (!name) { showToast('⚠️ Введите имя'); return; }
+  if (!tgUsernameRaw) { showToast('⚠️ Введите Telegram username'); return; }
 
   const btn = document.getElementById('setup-btn');
   btn.disabled = true;
@@ -1743,12 +1906,13 @@ async function completeSetup() {
   const dbRole = state.role === 'editor' ? 'monter' : 'client';
 
   try {
-    const updated = await sb.update('users',
-      { role: dbRole, username: name },
-      `id=eq.${state.user.id}`
-    );
+    const bio = (document.getElementById('setup-bio')?.value || '').trim();
+    const updatePayload = { role: dbRole, username: name, tg_username: tgUsernameRaw };
+    if (bio) updatePayload.bio = bio;
+    await sb.update('users', updatePayload, `telegram_id=eq.${state.tgUser.id}`);
     state.user.role = dbRole;
     state.user.username = name;
+    state.user.tg_username = tgUsernameRaw;
     state.role = dbRole;
 
     document.getElementById('dot-s2').classList.remove('active');
@@ -1775,7 +1939,7 @@ async function completeSetup() {
 async function logout() {
   // Reset role in DB
   try {
-    await sb.update('users', { role: null }, `id=eq.${state.user.id}`);
+    await sb.update('users', { role: null }, `telegram_id=eq.${state.tgUser.id}`);
   } catch(e) {}
 
   state.role = null;
@@ -1858,7 +2022,6 @@ function closeModal(e) {
 // ============ INIT ============
 document.getElementById('editor-bio-row').style.display = 'none';
 document.getElementById('editor-price-row').style.display = 'none';
-document.getElementById('editor-portfolio-row').style.display = 'none';
 
 // Start app
 initApp();
